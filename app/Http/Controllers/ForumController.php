@@ -46,7 +46,7 @@ class ForumController extends Controller
 
     public function showThread(ForumCategory $category, ForumThread $thread): View
     {
-        abort_unless($thread->forum_category_id === $category->id, 404);
+        abort_unless($this->threadBelongsToCategory($thread, $category), 404);
 
         $thread->increment('view_count');
 
@@ -89,7 +89,7 @@ class ForumController extends Controller
 
     public function storeReply(Request $request, ForumCategory $category, ForumThread $thread): RedirectResponse
     {
-        abort_unless($thread->forum_category_id === $category->id, 404);
+        abort_unless($this->threadBelongsToCategory($thread, $category), 404);
         abort_unless($request->user()->canReplyToForumThread($thread), 403);
 
         $validated = $request->validateWithBag('replyThread', [
@@ -123,7 +123,7 @@ class ForumController extends Controller
 
     public function toggleThreadLock(Request $request, ForumCategory $category, ForumThread $thread): RedirectResponse
     {
-        abort_unless($thread->forum_category_id === $category->id, 404);
+        abort_unless($this->threadBelongsToCategory($thread, $category), 404);
         abort_unless($request->user()->canManageForumThread($thread), 403);
 
         $thread->forceFill([
@@ -135,7 +135,7 @@ class ForumController extends Controller
 
     public function destroyThread(Request $request, ForumCategory $category, ForumThread $thread): RedirectResponse
     {
-        abort_unless($thread->forum_category_id === $category->id, 404);
+        abort_unless($this->threadBelongsToCategory($thread, $category), 404);
         abort_unless($request->user()->canManageForumThread($thread), 403);
 
         $replyIds = $thread->replies()->withTrashed()->pluck('id');
@@ -157,8 +157,8 @@ class ForumController extends Controller
 
     public function destroyReply(Request $request, ForumCategory $category, ForumThread $thread, ForumReply $reply): RedirectResponse
     {
-        abort_unless($thread->forum_category_id === $category->id, 404);
-        abort_unless($reply->forum_thread_id === $thread->id, 404);
+        abort_unless($this->threadBelongsToCategory($thread, $category), 404);
+        abort_unless($this->replyBelongsToThread($reply, $thread), 404);
         abort_unless($request->user()->canManageForumReply($reply), 403);
 
         $reply->reactions()->delete();
@@ -173,7 +173,7 @@ class ForumController extends Controller
 
     public function reactToThread(Request $request, ForumCategory $category, ForumThread $thread)
     {
-        abort_unless($thread->forum_category_id === $category->id, 404);
+        abort_unless($this->threadBelongsToCategory($thread, $category), 404);
 
         $validated = $request->validate([
             'type' => ['required', 'in:like,dislike'],
@@ -190,8 +190,8 @@ class ForumController extends Controller
 
     public function reactToReply(Request $request, ForumCategory $category, ForumThread $thread, ForumReply $reply)
     {
-        abort_unless($thread->forum_category_id === $category->id, 404);
-        abort_unless($reply->forum_thread_id === $thread->id, 404);
+        abort_unless($this->threadBelongsToCategory($thread, $category), 404);
+        abort_unless($this->replyBelongsToThread($reply, $thread), 404);
 
         $validated = $request->validate([
             'type' => ['required', 'in:like,dislike'],
@@ -220,6 +220,16 @@ class ForumController extends Controller
         }
 
         return $slug;
+    }
+
+    private function threadBelongsToCategory(ForumThread $thread, ForumCategory $category): bool
+    {
+        return (string) $thread->forum_category_id === (string) $category->getKey();
+    }
+
+    private function replyBelongsToThread(ForumReply $reply, ForumThread $thread): bool
+    {
+        return (string) $reply->forum_thread_id === (string) $thread->getKey();
     }
 
     private function toggleReaction(Request $request, Model $reactable, string $type): void
