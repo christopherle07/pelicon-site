@@ -1,5 +1,5 @@
 <x-public-layout title="Forum - {{ config('app.name', 'Pelicon') }}">
-    @php($searchIcon = asset('build/assets/search.svg'))
+    @php($searchIcon = asset('icons/search.svg'))
     <div class="forum-shell">
         <section class="forum-hero">
             <p class="section-kicker">Forum</p>

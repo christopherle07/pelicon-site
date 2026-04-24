@@ -1,6 +1,6 @@
 <x-public-layout title="{{ $category->name }} - Forum">
     @php($threadFormErrors = $errors->getBag('createThread'))
-    @php($searchIcon = asset('build/assets/search.svg'))
+    @php($searchIcon = asset('icons/search.svg'))
 
     @if (session('status'))
         <section class="flash-toast surface-panel mb-8 p-6 text-sm font-medium" data-auto-dismiss="5000" style="color: var(--success);">

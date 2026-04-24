@@ -9,9 +9,9 @@
     $descendantCount = $reply->descendantCount();
     $replyTargetId = $replyErrors->any() && old('parent_id') ? (int) old('parent_id') : null;
     $shouldAutoCollapse = $hasChildren && $depth >= 3 && ! ($replyTargetId && $reply->containsReplyInTree($replyTargetId));
-    $commentIcon = asset('build/assets/comment.svg');
-    $reactionIcon = asset('build/assets/like-dislike.svg');
-    $reactionIconFilled = asset('build/assets/like-dislike-filled.svg').'?v=2';
+    $commentIcon = asset('icons/comment.svg');
+    $reactionIcon = asset('icons/like-dislike.svg');
+    $reactionIconFilled = asset('icons/like-dislike-filled.svg').'?v=2';
 @endphp
 
 <div x-data="{ openReplyComposer: @js($isTargetReply), collapsed: @js($shouldAutoCollapse), openReplyMenu: false }" class="forum-reply-thread{{ $depth ? ' forum-reply-thread--nested' : '' }}" style="{{ $depth ? 'margin-left: '.$indent.'rem;' : '' }}">

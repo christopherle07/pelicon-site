@@ -6,9 +6,9 @@
         $threadDislikes = $thread->reactions->where('type', 'dislike')->count();
         $canManageThread = auth()->check() && auth()->user()->canManageForumThread($thread);
         $canReplyToThread = auth()->check() && auth()->user()->canReplyToForumThread($thread);
-        $commentIcon = asset('build/assets/comment.svg');
-        $reactionIcon = asset('build/assets/like-dislike.svg');
-        $reactionIconFilled = asset('build/assets/like-dislike-filled.svg').'?v=2';
+        $commentIcon = asset('icons/comment.svg');
+        $reactionIcon = asset('icons/like-dislike.svg');
+        $reactionIconFilled = asset('icons/like-dislike-filled.svg').'?v=2';
     @endphp
 
     @if (session('status'))
