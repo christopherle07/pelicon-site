@@ -6,6 +6,9 @@
         $threadDislikes = $thread->reactions->where('type', 'dislike')->count();
         $canManageThread = auth()->check() && auth()->user()->canManageForumThread($thread);
         $canReplyToThread = auth()->check() && auth()->user()->canReplyToForumThread($thread);
+        $commentIcon = asset('build/assets/comment.svg');
+        $reactionIcon = asset('build/assets/like-dislike.svg');
+        $reactionIconFilled = asset('build/assets/like-dislike-filled.svg').'?v=2';
     @endphp
 
     @if (session('status'))
@@ -79,34 +82,45 @@
 
         <div class="mt-8 flex flex-wrap items-center gap-3">
             @auth
-                <div class="reaction-group" data-reaction-group data-current-reaction="{{ $threadUserReaction ?? '' }}">
+                <div class="forum-action-group" data-reaction-group data-current-reaction="{{ $threadUserReaction ?? '' }}">
                     <form method="POST" action="{{ route('forum.threads.react', [$category, $thread]) }}" data-reaction-form>
                         @csrf
                         <input type="hidden" name="type" value="like">
-                        <button type="submit" data-reaction-button="like" aria-pressed="{{ $threadUserReaction === 'like' ? 'true' : 'false' }}" class="reaction-button {{ $threadUserReaction === 'like' ? 'reaction-button--active' : '' }} px-4 py-2 text-sm font-semibold transition">
-                            Like <span data-reaction-count="like">{{ $threadLikes }}</span>
+                        <button type="submit" data-reaction-button="like" aria-pressed="{{ $threadUserReaction === 'like' ? 'true' : 'false' }}" class="forum-action-button {{ $threadUserReaction === 'like' ? 'forum-action-button--active' : '' }}">
+                            <img src="{{ $threadUserReaction === 'like' ? $reactionIconFilled : $reactionIcon }}" alt="" class="forum-action-button__icon" aria-hidden="true" data-reaction-icon data-inactive-src="{{ $reactionIcon }}" data-active-src="{{ $reactionIconFilled }}">
+                            <span class="sr-only">Like</span>
+                            <span class="forum-action-button__count" data-reaction-count="like">{{ $threadLikes }}</span>
                         </button>
                     </form>
 
                     <form method="POST" action="{{ route('forum.threads.react', [$category, $thread]) }}" data-reaction-form>
                         @csrf
                         <input type="hidden" name="type" value="dislike">
-                        <button type="submit" data-reaction-button="dislike" aria-pressed="{{ $threadUserReaction === 'dislike' ? 'true' : 'false' }}" class="reaction-button {{ $threadUserReaction === 'dislike' ? 'reaction-button--active' : '' }} px-4 py-2 text-sm font-semibold transition">
-                            Dislike <span data-reaction-count="dislike">{{ $threadDislikes }}</span>
+                        <button type="submit" data-reaction-button="dislike" aria-pressed="{{ $threadUserReaction === 'dislike' ? 'true' : 'false' }}" class="forum-action-button {{ $threadUserReaction === 'dislike' ? 'forum-action-button--active' : '' }}">
+                            <img src="{{ $threadUserReaction === 'dislike' ? $reactionIconFilled : $reactionIcon }}" alt="" class="forum-action-button__icon forum-action-button__icon--flipped" aria-hidden="true" data-reaction-icon data-inactive-src="{{ $reactionIcon }}" data-active-src="{{ $reactionIconFilled }}">
+                            <span class="sr-only">Dislike</span>
+                            <span class="forum-action-button__count" data-reaction-count="dislike">{{ $threadDislikes }}</span>
                         </button>
                     </form>
                 </div>
 
                 @if ($canReplyToThread)
-                    <button type="button" @click="openMainReply = !openMainReply" class="button-secondary inline-flex px-5 py-2 text-sm font-semibold transition">
-                        Reply
+                    <button type="button" @click="openMainReply = !openMainReply" class="forum-action-button">
+                        <img src="{{ $commentIcon }}" alt="" class="forum-action-button__icon" aria-hidden="true">
+                        <span class="sr-only">Reply</span>
                     </button>
                 @elseif ($thread->is_locked)
                     <span class="px-4 py-2 text-sm font-semibold" style="background: var(--bg-elevated);">Locked</span>
                 @endif
             @else
-                <span class="px-4 py-2 text-sm font-semibold" style="background: var(--bg-elevated);">Like {{ $threadLikes }}</span>
-                <span class="px-4 py-2 text-sm font-semibold" style="background: var(--bg-elevated);">Dislike {{ $threadDislikes }}</span>
+                <span class="forum-action-button">
+                    <img src="{{ $reactionIcon }}" alt="" class="forum-action-button__icon" aria-hidden="true">
+                    <span class="forum-action-button__count">{{ $threadLikes }}</span>
+                </span>
+                <span class="forum-action-button">
+                    <img src="{{ $reactionIcon }}" alt="" class="forum-action-button__icon forum-action-button__icon--flipped" aria-hidden="true">
+                    <span class="forum-action-button__count">{{ $threadDislikes }}</span>
+                </span>
                 @if ($thread->is_locked)
                     <span class="px-4 py-2 text-sm font-semibold" style="background: var(--bg-elevated);">Locked</span>
                 @else
@@ -134,8 +148,7 @@
 
                         <div>
                             <x-label for="reply_body" value="Message" />
-                            <textarea id="reply_body" name="body" rows="8" class="mt-1 block w-full px-4 py-3 focus:outline-none focus:ring-2"
-                                style="border-color: var(--border-strong); background: var(--bg-elevated); color: var(--text-strong);">{{ old('parent_id') ? '' : old('body') }}</textarea>
+                            <textarea id="reply_body" name="body" rows="8" class="site-textarea mt-1 block w-full px-4 py-3 focus:outline-none focus:ring-0">{{ old('parent_id') ? '' : old('body') }}</textarea>
                         </div>
 
                         <div class="flex justify-end">

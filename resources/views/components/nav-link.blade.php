@@ -2,10 +2,10 @@
 
 @php
 $classes = ($active ?? false)
-            ? 'inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out'
-            : 'inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out';
+            ? 'site-nav-button site-nav-button--active focus:outline-none'
+            : 'site-nav-button focus:outline-none';
 @endphp
 
-<a {{ $attributes->merge(['class' => $classes, 'style' => ($active ?? false) ? 'border-color: var(--accent); color: var(--text-strong);' : 'color: var(--text-muted);']) }}>
+<a {{ $attributes->merge(['class' => $classes, 'style' => ($active ?? false) ? 'color: var(--text-strong); background: var(--accent-soft);' : 'color: var(--text-muted);']) }}>
     {{ $slot }}
 </a>

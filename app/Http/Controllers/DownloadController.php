@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\View\View;
 
 class DownloadController extends Controller
@@ -11,96 +9,41 @@ class DownloadController extends Controller
     /**
      * @var array<string, array<string, string>>
      */
-    private const PLATFORMS = [
+    private const PLATFORM_FILES = [
         'macos' => [
-            'name' => 'MacOS',
-            'headline' => 'Download Pelicon for MacOS',
-            'copy' => 'MacOS Release.',
+            'name' => 'macOS',
+            'copy' => 'Placeholder build for Apple Silicon and Intel Macs.',
+            'filename' => 'pelicon-macos-placeholder.txt',
         ],
         'windows' => [
             'name' => 'Windows',
-            'headline' => 'Download Pelicon for Windows',
-            'copy' => 'Windows Release.',
+            'copy' => 'Placeholder build for Windows desktops and laptops.',
+            'filename' => 'pelicon-windows-placeholder.txt',
         ],
         'linux' => [
             'name' => 'Linux',
-            'headline' => 'Download Pelicon for Linux',
-            'copy' => 'Linux Release.',
+            'copy' => 'Placeholder build for Linux distros.',
+            'filename' => 'pelicon-linux-placeholder.txt',
         ],
     ];
 
     /**
-     * Display-only localized pricing for the future Stripe flow.
-     *
-     * @var array<string, array<string, mixed>>
+     * @return array<string, array<string, string>>
      */
-    private const CURRENCIES = [
-        'usd' => [
-            'code' => 'USD',
-            'symbol' => '$',
-            'label' => 'US Dollar',
-            'business_yearly' => 15,
-            'business_onetime' => 40,
-            'tips' => [1, 5, 10, 25],
-            'custom_step' => 1,
-        ],
-        'eur' => [
-            'code' => 'EUR',
-            'symbol' => '€',
-            'label' => 'Euro',
-            'business_yearly' => 13,
-            'business_onetime' => 34,
-            'tips' => [1, 4, 9],
-            'custom_step' => 1,
-        ],
-        'gbp' => [
-            'code' => 'GBP',
-            'symbol' => '£',
-            'label' => 'British Pound',
-            'business_yearly' => 11,
-            'business_onetime' => 29,
-            'tips' => [1, 4, 8],
-            'custom_step' => 1,
-        ],
-        'jpy' => [
-            'code' => 'JPY',
-            'symbol' => '¥',
-            'label' => 'Japanese Yen',
-            'business_yearly' => 2200,
-            'business_onetime' => 5800,
-            'tips' => [150, 700, 1500],
-            'custom_step' => 1,
-        ],
-        'aed' => [
-            'code' => 'AED',
-            'symbol' => 'AED ',
-            'label' => 'UAE Dirham',
-            'business_yearly' => 49,
-            'business_onetime' => 129,
-            'tips' => [5, 20, 40],
-            'custom_step' => 1,
-        ],
-    ];
+    public static function platforms(): array
+    {
+        return collect(self::PLATFORM_FILES)
+            ->map(fn (array $platform) => [
+                ...$platform,
+                'download_url' => asset('downloads/'.$platform['filename']),
+            ])
+            ->all();
+    }
 
     public function index(): View
     {
         return view('pages.download.index', [
-            'platforms' => self::PLATFORMS,
-        ]);
-    }
-
-    public function show(Request $request, string $platform): View
-    {
-        $platformConfig = Arr::get(self::PLATFORMS, strtolower($platform));
-
-        abort_unless($platformConfig, 404);
-
-        return view('pages.download.show', [
-            'platform' => $platformConfig,
-            'platformKey' => strtolower($platform),
-            'platforms' => self::PLATFORMS,
-            'currencies' => self::CURRENCIES,
-            'defaultCurrency' => 'usd',
+            'platforms' => self::platforms(),
         ]);
     }
 }

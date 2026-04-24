@@ -1,5 +1,6 @@
 <x-public-layout title="{{ $category->name }} - Forum">
     @php($threadFormErrors = $errors->getBag('createThread'))
+    @php($searchIcon = asset('build/assets/search.svg'))
 
     @if (session('status'))
         <section class="flash-toast surface-panel mb-8 p-6 text-sm font-medium" data-auto-dismiss="5000" style="color: var(--success);">
@@ -14,33 +15,44 @@
             <span class="copy-faint">{{ $category->name }}</span>
         </div>
 
-        <section class="surface-panel p-8 sm:p-10">
-            <h1 class="title-section text-4xl sm:text-5xl">{{ $category->name }}</h1>
+        <section class="forum-category-hero">
+            <div class="flex items-center gap-3">
+                <span class="forum-thread-card__category-dot" style="background-color: {{ $category->accent_color }}"></span>
+                <p class="section-kicker">{{ $category->name }}</p>
+            </div>
+            <h1 class="title-section mt-4 text-4xl sm:text-5xl">{{ $category->name }}</h1>
+            <p class="copy-muted mt-4 max-w-2xl text-base leading-8">{{ $category->description }}</p>
+            <div class="copy-faint mt-6 flex flex-wrap items-center gap-4 text-sm">
+                <span>{{ $category->threads_count }} threads</span>
+                <span>Category feed</span>
+            </div>
         </section>
 
-        <section class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <form method="GET" action="{{ route('forum.show', $category) }}" class="flex w-full items-center gap-3 sm:max-w-md">
+        <section class="forum-category-toolbar">
+            <form method="GET" action="{{ route('forum.show', $category) }}" class="w-full sm:max-w-xl">
+                <div class="forum-search-shell">
                 <x-input
                     id="forum_search"
                     name="q"
                     type="search"
-                    class="block w-full"
+                    class="forum-search-input block w-full pr-14"
                     :value="$search"
                     placeholder="Search this category"
                 />
-                <button type="submit" class="button-secondary inline-flex shrink-0 items-center justify-center px-4 py-3 text-sm font-semibold transition">
-                    Search
-                </button>
+                    <button type="submit" class="forum-search-button" aria-label="Search category">
+                        <img src="{{ $searchIcon }}" alt="" class="forum-search-button__icon" aria-hidden="true">
+                    </button>
+                </div>
             </form>
 
             <div class="shrink-0">
                 @auth
                     <button type="button" @click="openThreadComposer = !openThreadComposer" class="button-primary inline-flex items-center justify-center px-5 py-3 text-sm font-semibold transition">
-                        Post
+                        Create +
                     </button>
                 @else
                     <a href="{{ route('login') }}" class="button-secondary inline-flex items-center justify-center px-5 py-3 text-sm font-semibold transition">
-                        Post
+                        Create +
                     </a>
                 @endauth
             </div>
@@ -72,8 +84,7 @@
 
                     <div>
                         <x-label for="thread_body" value="Message" />
-                        <textarea id="thread_body" name="body" rows="8" class="mt-1 block w-full px-4 py-3 focus:outline-none focus:ring-2"
-                            style="border-color: var(--border-strong); background: var(--bg-elevated); color: var(--text-strong);">{{ old('body') }}</textarea>
+                        <textarea id="thread_body" name="body" rows="8" class="site-textarea mt-1 block w-full px-4 py-3 focus:outline-none focus:ring-0">{{ old('body') }}</textarea>
                     </div>
 
                     <div class="flex justify-end">
@@ -100,33 +111,32 @@
             </div>
         @endif
 
-        @forelse (($search !== '' ? $searchResults : $threads) as $thread)
-            <article class="surface-panel p-6">
-                <div class="flex flex-wrap items-center gap-2">
-                    <a href="{{ route('users.show', ['user' => $thread->author->name]) }}" class="copy-faint text-sm font-semibold text-[color:var(--text-strong)] transition hover:text-[color:var(--accent-strong)]">
-                        {{ $thread->author->name }}
-                    </a>
-                    <x-staff-badge :user="$thread->author" size="sm" tone="forum" />
+        <div class="forum-thread-list">
+            @forelse (($search !== '' ? $searchResults : $threads) as $thread)
+                <a href="{{ route('forum.threads.show', [$category, $thread]) }}" class="forum-thread-card forum-card-link">
+                    <div class="forum-thread-card__meta">
+                        <span class="copy-faint text-sm font-semibold text-[color:var(--text-strong)]">{{ $thread->author->name }}</span>
+                        <x-staff-badge :user="$thread->author" size="sm" tone="forum" />
+                        @if ($thread->is_pinned)
+                            <span class="section-kicker">Pinned</span>
+                        @endif
+                    </div>
+                    <div class="mt-3">
+                        <span class="forum-thread-card__title">{{ $thread->title }}</span>
+                    </div>
+                    <p class="copy-base mt-3 line-clamp-3 text-base leading-8">{{ $thread->body }}</p>
+                    <div class="forum-thread-card__stats">
+                        <span>Posted {{ $thread->created_at->format('M j, Y') }}</span>
+                        <span>Views {{ $thread->view_count ?? 0 }}</span>
+                        <span>{{ $thread->replies_count }} replies</span>
+                    </div>
+                </a>
+            @empty
+                <div class="forum-empty">
+                    {{ $search !== '' ? 'No threads matched your search in this category.' : 'No threads here yet. Be the first to start one.' }}
                 </div>
-                <div class="mt-3">
-                    <a href="{{ route('forum.threads.show', [$category, $thread]) }}" class="font-semibold text-[color:var(--text-strong)] hover:text-[color:var(--accent-strong)]">
-                        {{ $thread->title }}
-                    </a>
-                </div>
-                <p class="copy-base mt-3 line-clamp-3 text-sm leading-7">{{ $thread->body }}</p>
-                <div class="copy-faint mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                    <span>Posted {{ $thread->created_at->format('M j, Y') }}</span>
-                    <span>Like {{ $thread->likes_count ?? 0 }}</span>
-                    <span>Dislike {{ $thread->dislikes_count ?? 0 }}</span>
-                    <span>Views {{ $thread->view_count ?? 0 }}</span>
-                    <span>{{ $thread->replies_count }} replies</span>
-                </div>
-            </article>
-        @empty
-            <div class="surface-panel p-8 text-sm leading-7 copy-muted">
-                {{ $search !== '' ? 'No threads matched your search in this category.' : 'No threads here yet. Be the first to start one.' }}
-            </div>
-        @endforelse
+            @endforelse
+        </div>
 
         @if ($search === '' && $threads->hasPages())
             <div class="pt-2">

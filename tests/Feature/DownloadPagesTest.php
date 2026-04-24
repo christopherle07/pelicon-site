@@ -10,15 +10,8 @@ class DownloadPagesTest extends TestCase
     {
         $this->get(route('download.index'))
             ->assertOk()
-            ->assertSee('Choose your platform.');
-    }
-
-    public function test_platform_download_pages_load(): void
-    {
-        foreach (['macos', 'windows', 'linux'] as $platform) {
-            $this->get(route('download.show', $platform))
-                ->assertOk()
-                ->assertSee('Tip Jar');
-        }
+            ->assertSee('Download Pelicon')
+            ->assertSee('macOS')
+            ->assertSee('Tip');
     }
 }

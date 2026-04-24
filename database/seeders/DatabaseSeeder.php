@@ -17,5 +17,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ForumCategorySeeder::class,
         ]);
+
+        if (app()->environment('local')) {
+            $this->call([
+                LocalDemoContentSeeder::class,
+            ]);
+        }
     }
 }

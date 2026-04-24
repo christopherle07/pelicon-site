@@ -1,5 +1,10 @@
 <x-public-layout title="{{ $announcement->title }} - {{ config('app.name', 'Pelicon') }}">
-    @php($commentErrors = $errors->getBag('announcementComment'))
+    @php
+        $commentErrors = $errors->getBag('announcementComment');
+        $commentIcon = asset('build/assets/comment.svg');
+        $reactionIcon = asset('build/assets/like-dislike.svg');
+        $reactionIconFilled = asset('build/assets/like-dislike-filled.svg').'?v=2';
+    @endphp
 
     @if (session('status'))
         <section class="flash-toast surface-panel mx-auto mt-8 max-w-4xl p-6 text-sm font-medium" data-auto-dismiss="5000" style="color: var(--success);">
@@ -7,17 +12,17 @@
         </section>
     @endif
 
-    <article class="surface-panel mx-auto max-w-4xl overflow-hidden">
+    <article class="news-article">
         @if ($announcement->cover_image_url)
-            <img src="{{ $announcement->cover_image_url }}" alt="" class="h-72 w-full object-cover sm:h-96">
+            <img src="{{ $announcement->cover_image_url }}" alt="" class="news-article__image">
         @endif
 
-        <div class="p-8 sm:p-10">
-            <a href="{{ route('news.index') }}" class="text-sm font-semibold text-[color:var(--accent-strong)]">Back to news</a>
+        <div class="news-article__body">
+            <a href="{{ route('news.index') }}" class="news-article__back">Back to news</a>
             <p class="section-kicker mt-6">{{ $announcement->published_at?->format('F j, Y') }}</p>
             <h1 class="title-hero mt-3 text-4xl sm:text-5xl">{{ $announcement->title }}</h1>
 
-            <div class="copy-faint mt-6 flex items-center gap-3 text-sm">
+            <div class="copy-faint mt-6 flex flex-wrap items-center gap-3 text-sm">
                 <span>
                     By
                     <a href="{{ route('users.show', ['user' => $announcement->author->name]) }}" class="font-semibold text-[color:var(--text-strong)] transition hover:text-[color:var(--accent-strong)]">
@@ -50,35 +55,53 @@
             </div>
 
             <div class="mt-10 flex flex-wrap items-center gap-3 text-sm" style="color: var(--text-muted);">
-                <span class="font-semibold text-[color:var(--text-strong)]">Reactions</span>
-
                 @auth
-                    <div class="reaction-group" data-reaction-group data-current-reaction="{{ $userReaction ?? '' }}">
+                    <div class="forum-action-group" data-reaction-group data-current-reaction="{{ $userReaction ?? '' }}">
                         <form method="POST" action="{{ route('news.react', $announcement) }}" data-reaction-form>
                             @csrf
                             <input type="hidden" name="type" value="like">
-                            <button type="submit" data-reaction-button="like" aria-pressed="{{ $userReaction === 'like' ? 'true' : 'false' }}" class="reaction-button {{ $userReaction === 'like' ? 'reaction-button--active' : '' }} px-4 py-2 text-sm font-semibold transition">
-                                Like <span data-reaction-count="like">{{ $reactionCounts->get('like', 0) }}</span>
+                            <button type="submit" data-reaction-button="like" aria-pressed="{{ $userReaction === 'like' ? 'true' : 'false' }}" class="forum-action-button {{ $userReaction === 'like' ? 'forum-action-button--active' : '' }}">
+                                <img src="{{ $userReaction === 'like' ? $reactionIconFilled : $reactionIcon }}" alt="" class="forum-action-button__icon" aria-hidden="true" data-reaction-icon data-inactive-src="{{ $reactionIcon }}" data-active-src="{{ $reactionIconFilled }}">
+                                <span class="sr-only">Like</span>
+                                <span class="forum-action-button__count" data-reaction-count="like">{{ $reactionCounts->get('like', 0) }}</span>
                             </button>
                         </form>
 
                         <form method="POST" action="{{ route('news.react', $announcement) }}" data-reaction-form>
                             @csrf
                             <input type="hidden" name="type" value="dislike">
-                            <button type="submit" data-reaction-button="dislike" aria-pressed="{{ $userReaction === 'dislike' ? 'true' : 'false' }}" class="reaction-button {{ $userReaction === 'dislike' ? 'reaction-button--active' : '' }} px-4 py-2 text-sm font-semibold transition">
-                                Dislike <span data-reaction-count="dislike">{{ $reactionCounts->get('dislike', 0) }}</span>
+                            <button type="submit" data-reaction-button="dislike" aria-pressed="{{ $userReaction === 'dislike' ? 'true' : 'false' }}" class="forum-action-button {{ $userReaction === 'dislike' ? 'forum-action-button--active' : '' }}">
+                                <img src="{{ $userReaction === 'dislike' ? $reactionIconFilled : $reactionIcon }}" alt="" class="forum-action-button__icon forum-action-button__icon--flipped" aria-hidden="true" data-reaction-icon data-inactive-src="{{ $reactionIcon }}" data-active-src="{{ $reactionIconFilled }}">
+                                <span class="sr-only">Dislike</span>
+                                <span class="forum-action-button__count" data-reaction-count="dislike">{{ $reactionCounts->get('dislike', 0) }}</span>
                             </button>
                         </form>
+
+                        <button type="button" @click="$dispatch('toggle-news-comment')" class="forum-action-button">
+                            <img src="{{ $commentIcon }}" alt="" class="forum-action-button__icon" aria-hidden="true">
+                            <span class="sr-only">Comment</span>
+                            <span class="forum-action-button__count">{{ $announcement->comments->count() }}</span>
+                        </button>
                     </div>
                 @else
-                    <span class="px-3 py-1" style="background: var(--bg-elevated);">Like {{ $reactionCounts->get('like', 0) }}</span>
-                    <span class="px-3 py-1" style="background: var(--bg-elevated);">Dislike {{ $reactionCounts->get('dislike', 0) }}</span>
+                    <span class="forum-action-button">
+                        <img src="{{ $reactionIcon }}" alt="" class="forum-action-button__icon" aria-hidden="true">
+                        <span class="forum-action-button__count">{{ $reactionCounts->get('like', 0) }}</span>
+                    </span>
+                    <span class="forum-action-button">
+                        <img src="{{ $reactionIcon }}" alt="" class="forum-action-button__icon forum-action-button__icon--flipped" aria-hidden="true">
+                        <span class="forum-action-button__count">{{ $reactionCounts->get('dislike', 0) }}</span>
+                    </span>
+                    <span class="forum-action-button">
+                        <img src="{{ $commentIcon }}" alt="" class="forum-action-button__icon" aria-hidden="true">
+                        <span class="forum-action-button__count">{{ $announcement->comments->count() }}</span>
+                    </span>
                 @endauth
             </div>
         </div>
     </article>
 
-    <section class="surface-panel mx-auto mt-8 max-w-4xl p-8 sm:p-10">
+    <section class="news-comments" x-data="{ openComposer: @js($commentErrors->any()) }" @toggle-news-comment.window="openComposer = !openComposer">
         <div class="flex items-center justify-between gap-4">
             <div>
                 <p class="section-kicker">Comments</p>
@@ -99,28 +122,33 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('news.comments.store', $announcement) }}" class="space-y-4">
-                    @csrf
+                <div class="news-comment-composer">
+                    <button type="button" @click="openComposer = !openComposer" class="button-secondary inline-flex px-5 py-3 text-sm font-semibold transition">
+                        Comment
+                    </button>
 
-                    <div>
-                        <x-label for="announcement_comment_body" value="Comment" />
-                        <textarea
-                            id="announcement_comment_body"
-                            name="body"
-                            rows="5"
-                            class="mt-2 block w-full px-4 py-3 focus:outline-none focus:ring-2"
-                            style="border-color: var(--border-strong); background: var(--bg-elevated); color: var(--text-strong);"
-                        >{{ old('body') }}</textarea>
-                    </div>
+                    <form x-show="openComposer" x-cloak method="POST" action="{{ route('news.comments.store', $announcement) }}" class="mt-4 space-y-4">
+                        @csrf
 
-                    <div class="flex justify-end">
-                        <button type="submit" class="button-primary inline-flex px-5 py-3 text-sm font-semibold transition">
-                            Post comment
-                        </button>
-                    </div>
-                </form>
+                        <div>
+                            <textarea
+                                id="announcement_comment_body"
+                                name="body"
+                                rows="5"
+                                class="site-textarea block w-full px-4 py-3 focus:outline-none focus:ring-0"
+                                placeholder="Write a comment"
+                            >{{ old('body') }}</textarea>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="submit" class="button-primary inline-flex px-5 py-3 text-sm font-semibold transition">
+                                Post comment
+                            </button>
+                        </div>
+                    </form>
+                </div>
             @else
-                <div class="p-6 text-sm leading-7 copy-muted" style="background: var(--bg-elevated);">
+                <div class="news-comments__signin">
                     <a href="{{ route('login') }}" class="font-semibold text-[color:var(--accent-strong)]">Sign in</a> to comment on this announcement.
                 </div>
             @endauth
@@ -130,19 +158,19 @@
             @forelse ($announcement->comments as $comment)
                 @php($canManageComment = auth()->check() && auth()->user()->canManageAnnouncementComment($comment))
 
-                <article x-data="{ openCommentMenu: false }" class="p-5" style="background: var(--bg-elevated);">
+                <article x-data="{ openCommentMenu: false }" class="news-comment">
                     <div class="flex items-start justify-between gap-4">
-                        <div class="flex items-center gap-3">
+                        <div class="news-comment__meta">
                             <a href="{{ route('users.show', ['user' => $comment->user->name]) }}" class="font-semibold text-[color:var(--text-strong)] transition hover:text-[color:var(--accent-strong)]">
                                 {{ $comment->user->name }}
                             </a>
                             <x-staff-badge :user="$comment->user" />
-                            <span class="copy-faint text-sm">{{ $comment->created_at->diffForHumans() }}</span>
+                            <span class="copy-faint">{{ $comment->created_at->diffForHumans() }}</span>
                         </div>
 
                         @if ($canManageComment)
                             <div class="relative shrink-0">
-                                <button type="button" @click="openCommentMenu = ! openCommentMenu" class="button-secondary inline-flex h-10 w-10 items-center justify-center text-lg font-semibold transition" aria-label="Comment actions">
+                                <button type="button" @click="openCommentMenu = ! openCommentMenu" class="news-comment__menu-toggle" aria-label="Comment actions">
                                     ...
                                 </button>
 
@@ -159,10 +187,10 @@
                         @endif
                     </div>
 
-                    <p class="copy-base mt-3 whitespace-pre-line text-sm leading-7">{{ $comment->body }}</p>
+                    <p class="news-comment__body">{{ $comment->body }}</p>
                 </article>
             @empty
-                <div class="p-6 text-sm leading-7 copy-muted" style="background: var(--bg-elevated);">
+                <div class="news-comments__empty">
                     No comments yet.
                 </div>
             @endforelse

@@ -10,6 +10,7 @@ class HomeController extends Controller
     public function __invoke(): View
     {
         return view('pages.home', [
+            'downloadPlatforms' => DownloadController::platforms(),
             'latestAnnouncement' => Announcement::query()
                 ->published()
                 ->with('author')

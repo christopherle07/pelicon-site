@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 Route::get('/download', [DownloadController::class, 'index'])->name('download.index');
-Route::get('/download/{platform}', [DownloadController::class, 'show'])->name('download.show');
 Route::view('/contact', 'pages.contact')->name('contact');
 Route::view('/licensing', 'pages.licensing')->name('licensing');
 Route::view('/privacy-policy', 'pages.privacy')->name('privacy');

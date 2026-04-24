@@ -6,29 +6,32 @@
     @endphp
 
     <nav
-        x-data="{ open: false, scrolled: window.scrollY > 0 }"
-        @scroll.window="scrolled = window.scrollY > 0"
-        class="fixed inset-x-0 top-0 z-[70] isolate transition-all duration-300"
-        :style="scrolled
-            ? 'background: rgba(24, 24, 24, 0.92); backdrop-filter: blur(18px); box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);'
-            : 'background: rgba(21, 21, 21, 0.16); backdrop-filter: blur(10px); box-shadow: none;'"
+        x-data="{ open: false, scrolled: window.scrollY > 20 }"
+        @scroll.window="scrolled = window.scrollY > 20"
+        class="fixed inset-x-0 top-0 z-[70] isolate"
     >
-        <div class="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
-            <div class="h-16 w-full" style="display: flex; width: 100%; justify-content: space-between;">
+        <div class="mx-auto w-full max-w-6xl px-5 pt-0 sm:px-8 lg:px-10">
+            <div
+                class="site-navbar__frame"
+                :style="scrolled
+                    ? 'background: var(--nav-glass); backdrop-filter: blur(16px); box-shadow: var(--nav-shadow); border-color: var(--border-subtle);'
+                    : 'background: transparent; backdrop-filter: none; box-shadow: none; border-color: transparent;'"
+            >
+            <div class="h-14 w-full" style="display: flex; width: 100%; justify-content: space-between; gap: 1rem;">
                 <div class="flex shrink-0 items-center">
                     <a href="{{ route('home') }}" class="font-display text-lg font-bold tracking-tight text-[color:var(--text-strong)]">
                         {{ config('app.name', 'Pelicon') }}
                     </a>
                 </div>
 
-                <div class="hidden sm:ms-6 sm:flex sm:items-stretch" style="margin-left: auto; gap: 1.5rem;">
-                    <div class="hidden space-x-8 sm:-my-px sm:flex">
+                <div class="hidden sm:flex sm:items-center" style="margin-left: auto; gap: 0.55rem;">
+                    <div class="hidden items-center gap-1.5 sm:flex">
                         <a
                             href="{{ route('download.index') }}"
-                            class="inline-flex h-full items-center border-b-2 px-4 text-sm font-medium leading-5 transition duration-200 ease-in-out"
+                            class="site-nav-button"
                             :style="scrolled
-                                ? 'border-color: transparent; background: #b91c1c; color: #fff5f5;'
-                                : '{{ $downloadActive ? 'border-color: var(--accent); color: var(--text-strong); background: transparent;' : 'border-color: transparent; color: var(--text-muted); background: transparent;' }}'"
+                                ? 'background: var(--brand-green); color: #13210f; box-shadow: inset 0 0 0 1px rgba(31, 37, 29, 0.06);'
+                                : '{{ $downloadActive ? 'background: var(--accent-soft); color: var(--text-strong);' : 'background: transparent; color: var(--text-muted);' }}'"
                         >
                             {{ __('Download') }}
                         </a>
@@ -97,14 +100,14 @@
                             </x-dropdown>
                         </div>
                     @else
-                        <a href="{{ route('login') }}" class="button-auth inline-flex h-full items-center px-4 text-sm font-medium transition">
+                        <a href="{{ route('login') }}" class="site-nav-button button-auth">
                             {{ __('Sign in') }}
                         </a>
                     @endauth
                 </div>
 
                 <div class="-me-2 flex items-center sm:hidden">
-                    <button @click="open = ! open" class="inline-flex items-center justify-center rounded-md p-2 transition"
+                    <button @click="open = ! open" class="inline-flex items-center justify-center rounded-xl p-2 transition"
                         style="color: var(--text-muted);">
                         <svg class="size-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                             <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -113,69 +116,70 @@
                     </button>
                 </div>
             </div>
-        </div>
 
-        <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-            <div class="space-y-1 pt-2 pb-3">
-                <x-responsive-nav-link href="{{ route('download.index') }}" :active="request()->routeIs('download.*')">
-                    {{ __('Download') }}
-                </x-responsive-nav-link>
+            <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+                <div class="space-y-1 pt-2 pb-3">
+                    <x-responsive-nav-link href="{{ route('download.index') }}" :active="request()->routeIs('download.*')">
+                        {{ __('Download') }}
+                    </x-responsive-nav-link>
 
-                <x-responsive-nav-link href="{{ route('news.index') }}" :active="request()->routeIs('news.*')">
-                    {{ __('News') }}
-                </x-responsive-nav-link>
+                    <x-responsive-nav-link href="{{ route('news.index') }}" :active="request()->routeIs('news.*')">
+                        {{ __('News') }}
+                    </x-responsive-nav-link>
 
-                <x-responsive-nav-link href="{{ route('forum.index') }}" :active="request()->routeIs('forum.*')">
-                    {{ __('Forum') }}
-                </x-responsive-nav-link>
+                    <x-responsive-nav-link href="{{ route('forum.index') }}" :active="request()->routeIs('forum.*')">
+                        {{ __('Forum') }}
+                    </x-responsive-nav-link>
+                </div>
+
+                @auth
+                    <div class="border-t pt-4 pb-1" style="border-color: var(--border-subtle);">
+                        <div class="px-4">
+                            <div class="font-medium text-base text-[color:var(--text-strong)]">{{ Auth::user()->name }}</div>
+                            <div class="copy-faint font-medium text-sm">{{ Auth::user()->email }}</div>
+                        </div>
+
+                        <div class="mt-3 space-y-1">
+                            <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
+                                {{ __('Dashboard') }}
+                            </x-responsive-nav-link>
+
+                            <x-responsive-nav-link href="{{ route('settings') }}" :active="request()->routeIs('profile.show') || request()->routeIs('settings')">
+                                {{ __('Settings') }}
+                            </x-responsive-nav-link>
+
+                            <x-responsive-nav-link href="{{ route('users.show', ['user' => Auth::user()->name]) }}" :active="request()->routeIs('users.show') && request()->route('user')?->is(auth()->user())">
+                                {{ __('Profile') }}
+                            </x-responsive-nav-link>
+
+                            @if (auth()->user()->isStaff())
+                                <x-responsive-nav-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.*')">
+                                    {{ __('Admin') }}
+                                </x-responsive-nav-link>
+                            @endif
+
+                            <form method="POST" action="{{ route('logout') }}" x-data>
+                                @csrf
+
+                                <x-responsive-nav-link href="{{ route('logout') }}" @click.prevent="$root.submit();">
+                                    {{ __('Log Out') }}
+                                </x-responsive-nav-link>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <div class="border-t pt-4 pb-1" style="border-color: var(--border-subtle);">
+                        <div class="space-y-1">
+                            <x-responsive-nav-link href="{{ route('login') }}" :active="request()->routeIs('login')">
+                                {{ __('Sign in') }}
+                            </x-responsive-nav-link>
+                        </div>
+                    </div>
+                @endauth
             </div>
-
-            @auth
-                <div class="border-t pt-4 pb-1" style="border-color: var(--border-subtle);">
-                    <div class="px-4">
-                        <div class="font-medium text-base text-[color:var(--text-strong)]">{{ Auth::user()->name }}</div>
-                        <div class="copy-faint font-medium text-sm">{{ Auth::user()->email }}</div>
-                    </div>
-
-                    <div class="mt-3 space-y-1">
-                        <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                            {{ __('Dashboard') }}
-                        </x-responsive-nav-link>
-
-                        <x-responsive-nav-link href="{{ route('settings') }}" :active="request()->routeIs('profile.show') || request()->routeIs('settings')">
-                            {{ __('Settings') }}
-                        </x-responsive-nav-link>
-
-                        <x-responsive-nav-link href="{{ route('users.show', ['user' => Auth::user()->name]) }}" :active="request()->routeIs('users.show') && request()->route('user')?->is(auth()->user())">
-                            {{ __('Profile') }}
-                        </x-responsive-nav-link>
-
-                        @if (auth()->user()->isStaff())
-                            <x-responsive-nav-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.*')">
-                                {{ __('Admin') }}
-                            </x-responsive-nav-link>
-                        @endif
-
-                        <form method="POST" action="{{ route('logout') }}" x-data>
-                            @csrf
-
-                            <x-responsive-nav-link href="{{ route('logout') }}" @click.prevent="$root.submit();">
-                                {{ __('Log Out') }}
-                            </x-responsive-nav-link>
-                        </form>
-                    </div>
-                </div>
-            @else
-                <div class="border-t pt-4 pb-1" style="border-color: var(--border-subtle);">
-                    <div class="space-y-1">
-                        <x-responsive-nav-link href="{{ route('login') }}" :active="request()->routeIs('login')">
-                            {{ __('Sign in') }}
-                        </x-responsive-nav-link>
-                    </div>
-                </div>
-            @endauth
+            </div>
         </div>
     </nav>
 
-    <div aria-hidden="true" class="h-16"></div>
+    <div aria-hidden="true" class="h-20"></div>
 </div>

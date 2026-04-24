@@ -52,8 +52,7 @@
                                     id="announcement_excerpt"
                                     name="excerpt"
                                     rows="4"
-                                    class="mt-2 block w-full px-4 py-3 focus:outline-none focus:ring-2"
-                                    style="border-color: var(--border-strong); background: var(--bg-elevated); color: var(--text-strong);"
+                                    class="site-textarea mt-2 block w-full px-4 py-3 focus:outline-none focus:ring-0"
                                 >{{ old('excerpt', $announcement->excerpt) }}</textarea>
                                 <p class="copy-faint mt-2 text-xs">Optional. Leave blank to auto-generate it from the body.</p>
                             </div>

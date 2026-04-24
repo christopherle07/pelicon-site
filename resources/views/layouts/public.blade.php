@@ -30,43 +30,42 @@
                             <a href="{{ route('home') }}" class="font-display text-3xl font-bold tracking-tight text-[color:var(--text-strong)]">
                                 Pelicon
                             </a>
-                            <p class="copy-muted mt-5 leading-7">
-                                Download the app, read product updates, and join the community forum in one place.
-                            </p>
-
-                            <nav class="mt-8">
-                                <a href="https://discord.gg/seed93u4UC" class="font-semibold text-[color:var(--text-strong)] transition hover:text-white" target="_blank" rel="noreferrer">Discord</a>
+                            <nav class="mt-8 flex items-center gap-5">
+                                <a href="https://discord.gg/WFFCqzAb" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70" target="_blank" rel="noreferrer">Discord</a>
+                                <a href="{{ route('contact') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Contact</a>
                             </nav>
 
-                            <p class="copy-faint mt-8">Copyright &copy; Pelicon App 2026</p>
+                            <p class="copy-faint mt-8">
+                                &copy; Pelicon App 2026
+                            </p>
                         </div>
 
                         <div class="grid gap-x-12 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
                             <div>
-                                <p class="section-kicker">Get Started</p>
+                                <p class="section-kicker">Product</p>
                                 <nav class="mt-4 flex flex-col gap-3">
-                                    <a href="{{ route('download.index') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:text-white">Download</a>
-                                    <a href="{{ route('forum.index') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:text-white">Forum</a>
-                                    <a href="{{ route('news.index') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:text-white">News</a>
+                                    <a href="{{ route('download.index') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Download</a>
+                                    <a href="{{ route('news.index') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">News</a>
+                                    <a href="{{ route('forum.index') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Forum</a>
                                 </nav>
                             </div>
 
                             <div>
-                                <p class="section-kicker">Help</p>
+                                <p class="section-kicker">Documentation</p>
                                 <nav class="mt-4 flex flex-col gap-3">
-                                    <a href="{{ route('faq') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:text-white">FAQ</a>
-                                    <a href="https://docs.pelicon.app" class="font-semibold text-[color:var(--text-strong)] transition hover:text-white" target="_blank" rel="noreferrer">App Documentation</a>
-                                    <a href="https://dev.pelicon.app" class="font-semibold text-[color:var(--text-strong)] transition hover:text-white" target="_blank" rel="noreferrer">Plugin Documentation</a>
+                                    <a href="{{ route('faq') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">FAQ</a>
+                                    <a href="https://docs.pelicon.app" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70" target="_blank" rel="noreferrer">App Documentation</a>
+                                    <a href="https://dev.pelicon.app" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70" target="_blank" rel="noreferrer">Plugin Documentation</a>
                                 </nav>
                             </div>
 
                             <div>
-                                <p class="section-kicker">Resources</p>
+                                <p class="section-kicker">Legal</p>
                                 <nav class="mt-4 flex flex-col gap-3">
-                                    <a href="{{ route('terms') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:text-white">Terms of Service</a>
-                                    <a href="{{ route('privacy') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:text-white">Privacy Policy</a>
-                                    <a href="{{ route('developer.policies') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:text-white">Developer Policy</a>
-                                    <a href="{{ route('licensing') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:text-white">Licensing Agreement</a>
+                                    <a href="{{ route('terms') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Terms of Service</a>
+                                    <a href="{{ route('privacy') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Privacy Policy</a>
+                                    <a href="{{ route('developer.policies') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Developer Policy</a>
+                                    <a href="{{ route('licensing') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Licensing Agreement</a>
                                 </nav>
                             </div>
                         </div>

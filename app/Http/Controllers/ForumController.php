@@ -23,6 +23,18 @@ class ForumController extends Controller
         return view('pages.forum.index', [
             'search' => $search,
             'searchResults' => $search !== '' ? $this->searchThreads($search) : collect(),
+            'recentThreads' => $search === ''
+                ? ForumThread::query()
+                    ->with(['author', 'category'])
+                    ->withCount([
+                        'replies',
+                        'reactions as likes_count' => fn ($query) => $query->where('type', 'like'),
+                        'reactions as dislikes_count' => fn ($query) => $query->where('type', 'dislike'),
+                    ])
+                    ->latest('last_posted_at')
+                    ->limit(6)
+                    ->get()
+                : collect(),
             'categories' => ForumCategory::query()
                 ->withCount('threads')
                 ->orderBy('sort_order')

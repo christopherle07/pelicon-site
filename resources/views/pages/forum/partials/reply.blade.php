@@ -9,11 +9,14 @@
     $descendantCount = $reply->descendantCount();
     $replyTargetId = $replyErrors->any() && old('parent_id') ? (int) old('parent_id') : null;
     $shouldAutoCollapse = $hasChildren && $depth >= 3 && ! ($replyTargetId && $reply->containsReplyInTree($replyTargetId));
+    $commentIcon = asset('build/assets/comment.svg');
+    $reactionIcon = asset('build/assets/like-dislike.svg');
+    $reactionIconFilled = asset('build/assets/like-dislike-filled.svg').'?v=2';
 @endphp
 
-<div x-data="{ openReplyComposer: @js($isTargetReply), collapsed: @js($shouldAutoCollapse), openReplyMenu: false }" class="space-y-4" style="{{ $depth ? 'margin-left: '.$indent.'rem;' : '' }}">
-    <article id="reply-{{ $reply->id }}" class="surface-panel p-6">
-        <div class="flex items-start justify-between gap-4">
+<div x-data="{ openReplyComposer: @js($isTargetReply), collapsed: @js($shouldAutoCollapse), openReplyMenu: false }" class="forum-reply-thread{{ $depth ? ' forum-reply-thread--nested' : '' }}" style="{{ $depth ? 'margin-left: '.$indent.'rem;' : '' }}">
+    <article id="reply-{{ $reply->id }}" class="forum-reply{{ $depth ? ' forum-reply--nested' : '' }}">
+        <div class="forum-reply__header">
             <div class="flex items-start gap-3">
                 @if ($hasChildren)
                     <div class="shrink-0">
@@ -24,7 +27,7 @@
                 @endif
 
                 <div class="space-y-2">
-                    <div class="flex flex-wrap items-center gap-2 text-sm">
+                    <div class="forum-reply__meta">
                         <a href="{{ route('users.show', ['user' => $reply->author->name]) }}" class="font-semibold text-[color:var(--text-strong)] transition hover:text-[color:var(--accent-strong)]">
                             {{ $reply->author->name }}
                         </a>
@@ -39,14 +42,14 @@
                     </div>
 
                     @if ($hasChildren)
-                        <p class="copy-faint text-xs" x-text="collapsed ? '{{ $descendantCount }} {{ \Illuminate\Support\Str::plural('reply', $descendantCount) }} hidden' : '{{ $descendantCount }} {{ \Illuminate\Support\Str::plural('reply', $descendantCount) }} below'"></p>
+                        <p class="forum-reply__summary" x-text="collapsed ? '{{ $descendantCount }} {{ \Illuminate\Support\Str::plural('reply', $descendantCount) }} hidden' : '{{ $descendantCount }} {{ \Illuminate\Support\Str::plural('reply', $descendantCount) }} below'"></p>
                     @endif
                 </div>
             </div>
 
             @if ($canManageReply)
                 <div class="relative shrink-0">
-                    <button type="button" @click="openReplyMenu = ! openReplyMenu" class="button-secondary inline-flex h-10 w-10 items-center justify-center text-lg font-semibold transition" aria-label="Reply actions">
+                    <button type="button" @click="openReplyMenu = ! openReplyMenu" class="forum-reply__menu-toggle" aria-label="Reply actions">
                         ...
                     </button>
 
@@ -63,38 +66,49 @@
             @endif
         </div>
 
-        <p class="copy-base mt-4 whitespace-pre-line text-sm leading-7">{{ $reply->body }}</p>
+        <p class="forum-reply__body">{{ $reply->body }}</p>
 
-        <div class="mt-6 flex flex-wrap items-center gap-3">
+        <div class="forum-action-group mt-3">
             @auth
-                <div class="reaction-group" data-reaction-group data-current-reaction="{{ $replyUserReaction ?? '' }}">
+                <div class="forum-action-group" data-reaction-group data-current-reaction="{{ $replyUserReaction ?? '' }}">
                     <form method="POST" action="{{ route('forum.replies.react', [$category, $thread, $reply]) }}" data-reaction-form>
                         @csrf
                         <input type="hidden" name="type" value="like">
-                        <button type="submit" data-reaction-button="like" aria-pressed="{{ $replyUserReaction === 'like' ? 'true' : 'false' }}" class="reaction-button {{ $replyUserReaction === 'like' ? 'reaction-button--active' : '' }} px-4 py-2 text-sm font-semibold transition">
-                            Like <span data-reaction-count="like">{{ $replyLikes }}</span>
+                        <button type="submit" data-reaction-button="like" aria-pressed="{{ $replyUserReaction === 'like' ? 'true' : 'false' }}" class="forum-action-button forum-action-button--compact {{ $replyUserReaction === 'like' ? 'forum-action-button--active' : '' }}">
+                            <img src="{{ $replyUserReaction === 'like' ? $reactionIconFilled : $reactionIcon }}" alt="" class="forum-action-button__icon" aria-hidden="true" data-reaction-icon data-inactive-src="{{ $reactionIcon }}" data-active-src="{{ $reactionIconFilled }}">
+                            <span class="sr-only">Like</span>
+                            <span class="forum-action-button__count" data-reaction-count="like">{{ $replyLikes }}</span>
                         </button>
                     </form>
 
                     <form method="POST" action="{{ route('forum.replies.react', [$category, $thread, $reply]) }}" data-reaction-form>
                         @csrf
                         <input type="hidden" name="type" value="dislike">
-                        <button type="submit" data-reaction-button="dislike" aria-pressed="{{ $replyUserReaction === 'dislike' ? 'true' : 'false' }}" class="reaction-button {{ $replyUserReaction === 'dislike' ? 'reaction-button--active' : '' }} px-4 py-2 text-sm font-semibold transition">
-                            Dislike <span data-reaction-count="dislike">{{ $replyDislikes }}</span>
+                        <button type="submit" data-reaction-button="dislike" aria-pressed="{{ $replyUserReaction === 'dislike' ? 'true' : 'false' }}" class="forum-action-button forum-action-button--compact {{ $replyUserReaction === 'dislike' ? 'forum-action-button--active' : '' }}">
+                            <img src="{{ $replyUserReaction === 'dislike' ? $reactionIconFilled : $reactionIcon }}" alt="" class="forum-action-button__icon forum-action-button__icon--flipped" aria-hidden="true" data-reaction-icon data-inactive-src="{{ $reactionIcon }}" data-active-src="{{ $reactionIconFilled }}">
+                            <span class="sr-only">Dislike</span>
+                            <span class="forum-action-button__count" data-reaction-count="dislike">{{ $replyDislikes }}</span>
                         </button>
                     </form>
                 </div>
 
                 @if ($canReplyToThread)
-                    <button type="button" @click="openReplyComposer = !openReplyComposer" class="button-secondary inline-flex px-5 py-2 text-sm font-semibold transition">
-                        Reply
+                    <button type="button" @click="openReplyComposer = !openReplyComposer" class="forum-action-button forum-action-button--compact">
+                        <img src="{{ $commentIcon }}" alt="" class="forum-action-button__icon" aria-hidden="true">
+                        <span class="sr-only">Reply</span>
                     </button>
                 @elseif ($thread->is_locked)
                     <span class="px-4 py-2 text-sm font-semibold" style="background: var(--bg-elevated);">Locked</span>
                 @endif
             @else
-                <span class="px-4 py-2 text-sm font-semibold" style="background: var(--bg-elevated);">Like {{ $replyLikes }}</span>
-                <span class="px-4 py-2 text-sm font-semibold" style="background: var(--bg-elevated);">Dislike {{ $replyDislikes }}</span>
+                <span class="forum-action-button forum-action-button--compact">
+                    <img src="{{ $reactionIcon }}" alt="" class="forum-action-button__icon" aria-hidden="true">
+                    <span class="forum-action-button__count">{{ $replyLikes }}</span>
+                </span>
+                <span class="forum-action-button forum-action-button--compact">
+                    <img src="{{ $reactionIcon }}" alt="" class="forum-action-button__icon forum-action-button__icon--flipped" aria-hidden="true">
+                    <span class="forum-action-button__count">{{ $replyDislikes }}</span>
+                </span>
                 @if ($thread->is_locked)
                     <span class="px-4 py-2 text-sm font-semibold" style="background: var(--bg-elevated);">Locked</span>
                 @endif
@@ -121,8 +135,7 @@
 
                         <div>
                             <x-label for="reply_body_{{ $reply->id }}" value="Reply" />
-                            <textarea id="reply_body_{{ $reply->id }}" name="body" rows="6" class="mt-1 block w-full px-4 py-3 focus:outline-none focus:ring-2"
-                                style="border-color: var(--border-strong); background: var(--bg-elevated); color: var(--text-strong);">{{ $isTargetReply ? old('body') : '' }}</textarea>
+                            <textarea id="reply_body_{{ $reply->id }}" name="body" rows="6" class="site-textarea mt-1 block w-full px-4 py-3 focus:outline-none focus:ring-0">{{ $isTargetReply ? old('body') : '' }}</textarea>
                         </div>
 
                         <div class="flex justify-end">
@@ -137,7 +150,7 @@
     </article>
 
     @if ($hasChildren)
-        <div x-show="!collapsed" x-cloak class="space-y-4">
+        <div x-show="!collapsed" x-cloak class="forum-reply__children">
             @foreach ($reply->children as $childReply)
                 @include('pages.forum.partials.reply', [
                     'reply' => $childReply,

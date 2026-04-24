@@ -28,10 +28,9 @@ $width = match ($width) {
             x-transition:leave-start="transform opacity-100 scale-100"
             x-transition:leave-end="transform opacity-0 scale-95"
             class="absolute z-50 mt-2 {{ $width }} {{ $alignmentClasses }} {{ $dropdownClasses }}"
-            style="display: none;"
-            @click="open = false">
+            style="display: none;">
         <div class="{{ $contentClasses }}"
-            style="border: 1px solid var(--border-subtle); background: var(--bg-surface-alt);">
+            style="border: 1px solid var(--border-subtle); background: rgba(255, 255, 255, 0.86); backdrop-filter: blur(18px); box-shadow: 0 16px 36px rgba(27, 35, 24, 0.12); border-radius: 1rem;">
             {{ $content }}
         </div>
     </div>
