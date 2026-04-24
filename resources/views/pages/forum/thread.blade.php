@@ -27,11 +27,6 @@
 
     <section x-data="{ openMainReply: @js($replyErrors->any() && ! old('parent_id')), openThreadMenu: false }" class="surface-panel p-8 sm:p-10">
         <div class="flex items-start justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <span class="h-3 w-3" style="background-color: {{ $category->accent_color }}"></span>
-                <p class="section-kicker">{{ $category->name }}</p>
-            </div>
-
             @if ($canManageThread)
                 <div class="relative">
                     <button type="button" @click="openThreadMenu = ! openThreadMenu" class="button-secondary inline-flex h-10 w-10 items-center justify-center text-lg font-semibold transition" aria-label="Thread actions">
@@ -58,8 +53,6 @@
             @endif
         </div>
 
-        <h1 class="title-hero mt-3 text-4xl sm:text-5xl">{{ $thread->title }}</h1>
-
         <div class="copy-faint mt-6 flex flex-wrap items-center gap-3 text-sm">
             <span>
                 Started by
@@ -70,13 +63,13 @@
             <x-staff-badge :user="$thread->author" />
             <span>&middot;</span>
             <span>{{ $thread->created_at->format('M j, Y') }}</span>
-            <span>&middot;</span>
-            <span>{{ $thread->replies_count }} replies</span>
             @if ($thread->is_locked)
                 <span>&middot;</span>
                 <span>Locked</span>
             @endif
         </div>
+
+        <h1 class="title-hero mt-4 text-4xl sm:text-5xl">{{ $thread->title }}</h1>
 
         <p class="copy-base mt-8 whitespace-pre-line text-base leading-8">{{ $thread->body }}</p>
 
@@ -108,6 +101,7 @@
                     <button type="button" @click="openMainReply = !openMainReply" class="forum-action-button">
                         <img src="{{ $commentIcon }}" alt="" class="forum-action-button__icon" aria-hidden="true">
                         <span class="sr-only">Reply</span>
+                        <span class="forum-action-button__count">{{ $thread->replies_count }}</span>
                     </button>
                 @elseif ($thread->is_locked)
                     <span class="px-4 py-2 text-sm font-semibold" style="background: var(--bg-elevated);">Locked</span>
@@ -163,13 +157,6 @@
     </section>
 
     <section class="mt-8 space-y-4">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <p class="section-kicker">Replies</p>
-                <h2 class="title-section mt-2 text-3xl">{{ $thread->replies_count }} replies</h2>
-            </div>
-        </div>
-
         @forelse ($replyTree as $reply)
             @include('pages.forum.partials.reply', [
                 'reply' => $reply,

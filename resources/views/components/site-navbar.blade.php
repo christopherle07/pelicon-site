@@ -31,7 +31,7 @@
                             class="site-nav-button"
                             :style="scrolled
                                 ? 'background: var(--brand-green); color: #13210f; box-shadow: inset 0 0 0 1px rgba(31, 37, 29, 0.06);'
-                                : '{{ $downloadActive ? 'background: var(--accent-soft); color: var(--text-strong);' : 'background: transparent; color: var(--text-muted);' }}'"
+                                : '{{ $downloadActive ? 'background: var(--accent-soft); color: var(--text-strong);' : 'color: var(--text-muted);' }}'"
                         >
                             {{ __('Download') }}
                         </a>

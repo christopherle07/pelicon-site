@@ -19,6 +19,6 @@ class ExampleTest extends TestCase
         $response
             ->assertStatus(200)
             ->assertSeeText('Say Hi to Pelicon.')
-            ->assertSeeText('Updates');
+            ->assertSeeText('Everything important, without the noise.');
     }
 }

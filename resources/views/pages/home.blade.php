@@ -1,5 +1,5 @@
 <x-public-layout title="{{ config('app.name', 'Pelicon') }}">
-    <div class="home-page space-y-16 sm:space-y-20">
+    <div class="home-page">
         <section class="home-hero">
             <div class="home-hero__layout">
                 <div class="home-hero__copy">
@@ -13,10 +13,10 @@
                         </p>
                     </div>
 
-                    <div class="mt-8 flex flex-wrap items-center gap-3">
+                    <div class="home-hero__actions">
                         <div x-data="{ openDownloads: false }" class="relative">
                             <button type="button" @click="openDownloads = ! openDownloads" class="home-cta-primary">
-                                <span>Try Now!</span>
+                                <span>Try Pelicon</span>
                                 <span class="text-xs">▾</span>
                             </button>
 
@@ -35,70 +35,103 @@
                         </div>
 
                         <a href="{{ route('news.index') }}" class="home-cta-secondary">
-                            Updates
+                            Latest news
+                        </a>
+
+                        <a href="{{ route('forum.index') }}" class="home-inline-link">
+                            Forum
                         </a>
                     </div>
                 </div>
 
-                <div class="home-preview-card" aria-label="Placeholder image">
-                    <span>Placeholder<br>Image</span>
+                <div class="home-preview-shell" aria-label="Pelicon layout preview">
+                    <img
+                        src="{{ asset('build/assets/preview-1.png') }}"
+                        alt="Pelicon board preview"
+                        class="home-preview-image"
+                    >
                 </div>
             </div>
         </section>
 
-        <section class="home-nav-row grid gap-8 md:grid-cols-3">
-            <a href="https://discord.gg/WFFCqzAb" class="home-nav-row__item" target="_blank" rel="noreferrer">
-                <span class="section-kicker">Discord</span>
-                <strong class="mt-3 block text-2xl text-[color:var(--text-strong)]">Join our Discord</strong>
-                <span class="copy-muted mt-3 block text-sm leading-7">Talk with the community and keep up with the project.</span>
-            </a>
+        <section class="home-strip" aria-label="Core benefits">
+            <article class="home-strip__card">
+                <p class="section-kicker">1</p>
+                <h2 class="title-section text-2xl">Import your own personal workspace</h2>
+            </article>
 
-            <a href="{{ route('news.index') }}" class="home-nav-row__item">
-                <span class="section-kicker">News</span>
-                <strong class="mt-3 block text-2xl text-[color:var(--text-strong)]">Read updates</strong>
-                <span class="copy-muted mt-3 block text-sm leading-7">Follow announcements and release notes.</span>
-            </a>
+            <article class="home-strip__card">
+                <p class="section-kicker">2</p>
+                <h2 class="title-section text-2xl">Organize and view all your reference images with ease</h2>
+            </article>
 
-            <a href="{{ route('forum.index') }}" class="home-nav-row__item">
-                <span class="section-kicker">Forum</span>
-                <strong class="mt-3 block text-2xl text-[color:var(--text-strong)]">Join the discussion</strong>
-                <span class="copy-muted mt-3 block text-sm leading-7">Ask questions, share feedback, and report issues.</span>
-            </a>
+            <article class="home-strip__card">
+                <p class="section-kicker">3</p>
+                <h2 class="title-section text-2xl">Create aesthetic mood boards with all of our neat tools and features</h2>
+            </article>
         </section>
 
-        <section class="home-announcement">
-            <p class="section-kicker">Latest News</p>
+        <section class="home-bottom-grid">
+            <article class="home-announcement">
+                <p class="section-kicker">Latest News</p>
 
-            @if ($latestAnnouncement)
-                <div class="mt-4 flex flex-wrap items-center gap-3 text-sm copy-faint">
-                    <span>{{ $latestAnnouncement->published_at?->format('M j, Y') }}</span>
-                    <span>&middot;</span>
-                    <span>{{ $latestAnnouncement->comments_count }} comments</span>
-                    <span>&middot;</span>
-                    <span>{{ $latestAnnouncement->reactions_count }} reactions</span>
-                </div>
+                @if ($latestAnnouncement)
+                    <div class="home-announcement__meta">
+                        <span>{{ $latestAnnouncement->published_at?->format('M j, Y') }}</span>
+                        <span>&middot;</span>
+                        <span>{{ $latestAnnouncement->comments_count }} comments</span>
+                        <span>&middot;</span>
+                        <span>{{ $latestAnnouncement->reactions_count }} reactions</span>
+                    </div>
 
-                <h2 class="title-section mt-4 max-w-3xl text-3xl">{{ $latestAnnouncement->title }}</h2>
-                <p class="copy-base mt-4 max-w-3xl text-base leading-8">
-                    {{ $latestAnnouncement->excerpt }}
-                </p>
+                    <h2 class="title-section mt-4 max-w-3xl text-3xl">{{ $latestAnnouncement->title }}</h2>
+                    <p class="copy-base mt-4 max-w-3xl text-base leading-8">
+                        {{ $latestAnnouncement->excerpt }}
+                    </p>
 
-                <div class="mt-8 flex flex-wrap gap-3">
-                    <a href="{{ route('news.show', $latestAnnouncement) }}" class="home-news-card__button">
-                        Open Post
+                    <div class="mt-8 flex flex-wrap gap-3">
+                        <a href="{{ route('news.show', $latestAnnouncement) }}" class="home-news-card__button">
+                            Open post
+                        </a>
+                        <a href="{{ route('news.index') }}" class="home-news-card__button home-news-card__button--ghost">
+                            All news
+                        </a>
+                    </div>
+                @else
+                    <h2 class="title-section mt-4 max-w-3xl text-3xl">No update posted yet.</h2>
+                    <div class="mt-8">
+                        <a href="{{ route('news.index') }}" class="home-news-card__button">
+                            Open news
+                        </a>
+                    </div>
+                @endif
+            </article>
+
+            <aside class="home-links-panel">
+                <p class="section-kicker">Quick Links</p>
+
+                <div class="home-links-list mt-3">
+                    <a href="{{ route('download.index') }}" class="home-links-item">
+                        <span>Download</span>
+                        <span>Open</span>
                     </a>
-                    <a href="{{ route('news.index') }}" class="home-news-card__button">
-                        All News
+
+                    <a href="{{ route('news.index') }}" class="home-links-item">
+                        <span>News</span>
+                        <span>Open</span>
+                    </a>
+
+                    <a href="{{ route('forum.index') }}" class="home-links-item">
+                        <span>Forum</span>
+                        <span>Open</span>
+                    </a>
+
+                    <a href="https://discord.gg/WFFCqzAb" class="home-links-item" target="_blank" rel="noreferrer">
+                        <span>Discord</span>
+                        <span>Join</span>
                     </a>
                 </div>
-            @else
-                <h2 class="title-section mt-4 max-w-3xl text-3xl">No update posted yet.</h2>
-                <div class="mt-8">
-                    <a href="{{ route('news.index') }}" class="home-news-card__button">
-                        Open News
-                    </a>
-                </div>
-            @endif
+            </aside>
         </section>
     </div>
 </x-public-layout>
