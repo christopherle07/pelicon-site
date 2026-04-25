@@ -1409,6 +1409,10 @@ a {
     border-radius: 1px;
 }
 
+.editor-link-bar[hidden] {
+    display: none;
+}
+
 .editor-link-bar {
     display: flex;
     align-items: center;

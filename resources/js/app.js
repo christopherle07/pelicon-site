@@ -1,9 +1,7 @@
 import './bootstrap';
 import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
-import { Editor } from '@tiptap/core';
+import { Editor, Extension, InputRule } from '@tiptap/core';
 import { StarterKit } from '@tiptap/starter-kit';
-import { Underline } from '@tiptap/extension-underline';
-import { Link } from '@tiptap/extension-link';
 import { TextAlign } from '@tiptap/extension-text-align';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
@@ -344,6 +342,27 @@ const syncEditorToolbar = (editor, root) => {
     }
 };
 
+const MarkdownLinkRule = Extension.create({
+    name: 'markdownLinkRule',
+    addInputRules() {
+        return [
+            new InputRule({
+                find: /\[(.+?)\]\((.+?)\)$/,
+                handler({ state, range, match }) {
+                    const [, text, href] = match;
+                    const linkMark = state.schema.marks.link;
+                    if (!linkMark) return null;
+                    state.tr.replaceWith(
+                        range.from,
+                        range.to,
+                        state.schema.text(text, [linkMark.create({ href, target: '_blank', rel: 'noopener noreferrer' })]),
+                    );
+                },
+            }),
+        ];
+    },
+});
+
 const initTiptapEditors = () => {
     document.querySelectorAll('[data-rich-editor]').forEach((root) => {
         if (!(root instanceof HTMLElement) || root.dataset.richEditorInitialized === 'true') {
@@ -364,12 +383,13 @@ const initTiptapEditors = () => {
         const editor = new Editor({
             element: contentEl,
             extensions: [
-                StarterKit,
-                Underline,
-                Link.configure({
-                    openOnClick: false,
-                    HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' },
+                StarterKit.configure({
+                    link: {
+                        openOnClick: false,
+                        HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' },
+                    },
                 }),
+                MarkdownLinkRule,
                 TextAlign.configure({ types: ['heading', 'paragraph'] }),
                 TextStyle,
                 Color,
@@ -388,6 +408,12 @@ const initTiptapEditors = () => {
         });
 
         syncEditorToolbar(editor, root);
+
+        root.querySelector('[data-tiptap-toolbar]')?.addEventListener('mousedown', (e) => {
+            if (e.target instanceof Element && e.target.closest('button, label')) {
+                e.preventDefault();
+            }
+        });
 
         root.closest('form')?.addEventListener('submit', () => {
             input.value = editor.getHTML();
