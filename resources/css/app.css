@@ -125,7 +125,6 @@ a {
 }
 
 .news-feature,
-.news-card,
 .news-article,
 .news-comments {
     background: var(--bg-surface);
@@ -195,18 +194,39 @@ a {
 }
 
 .news-card {
+    display: flex;
+    flex-direction: row;
     overflow: hidden;
+    border-radius: 1.25rem;
+    background: var(--bg-surface);
+    transition: opacity 150ms ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.news-card:hover {
+    opacity: 0.8;
 }
 
 .news-card__image,
 .news-card__image--placeholder {
-    width: 100%;
-    height: 14rem;
+    flex-shrink: 0;
+    width: 26rem;
+    aspect-ratio: 16 / 9;
     object-fit: cover;
+}
+
+.news-card__image--placeholder {
+    display: flex;
+    align-items: flex-end;
+    padding: 1.2rem;
 }
 
 .news-card__body {
     padding: 1.4rem 1.45rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .news-card__meta {
@@ -1319,22 +1339,38 @@ a {
 .editor-toolbar {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.85rem;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.5rem 0.6rem;
     border-bottom: 1px solid var(--border-subtle);
-    background: rgba(31, 37, 29, 0.04);
+    background: rgba(31, 37, 29, 0.03);
+}
+
+.editor-group {
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.editor-group + .editor-group {
+    margin-left: 0.3rem;
+    padding-left: 0.3rem;
+    border-left: 1px solid var(--border-subtle);
 }
 
 .editor-tool {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.55rem 0.75rem;
-    background: var(--bg-surface);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.3rem;
     color: var(--text-strong);
-    font-size: 0.82rem;
+    background: transparent;
+    font-size: 0.78rem;
     font-weight: 700;
-    transition: background 150ms ease, color 150ms ease;
+    transition: background 100ms ease, color 100ms ease;
+    cursor: pointer;
 }
 
 .editor-tool:hover {
@@ -1342,36 +1378,83 @@ a {
     color: var(--accent-strong);
 }
 
-.editor-color-picker,
-.editor-size-picker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.45rem 0.6rem;
-    background: var(--bg-surface);
-    color: var(--text-strong);
+.editor-tool.is-active {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
 }
 
-.editor-color-picker input,
-.editor-size-picker select {
-    background: transparent;
-    color: var(--text-strong);
+.editor-tool--label {
+    width: auto;
+    padding: 0 0.45rem;
+    letter-spacing: -0.01em;
 }
 
-.editor-color-picker input {
+.editor-color-label {
+    flex-direction: column;
+    gap: 2px;
     width: 2rem;
     height: 2rem;
-    padding: 0;
-    border: 0;
+    cursor: pointer;
+}
+
+.editor-color-a {
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.editor-color-dot {
+    width: 1.1rem;
+    height: 3px;
+    border-radius: 1px;
+}
+
+.editor-link-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+    background: rgba(31, 37, 29, 0.03);
+}
+
+.editor-link-input {
+    flex: 1;
     background: transparent;
-}
-
-.editor-size-picker select {
+    color: var(--text-strong);
+    font-size: 0.83rem;
     border: 0;
-    padding-right: 0.5rem;
+    outline: none;
+    padding: 0.2rem 0;
+    min-width: 0;
 }
 
-.editor-canvas {
+.editor-link-btn {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 100ms ease;
+}
+
+.editor-link-btn--apply {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+}
+
+.editor-link-btn--cancel {
+    color: var(--text-faint);
+}
+
+.editor-link-btn:hover {
+    opacity: 0.8;
+}
+
+[data-rich-editor-content] .ProseMirror {
     min-height: 28rem;
     padding: 1.25rem;
     color: var(--text-strong);
@@ -1379,9 +1462,12 @@ a {
     white-space: normal;
 }
 
-.editor-canvas:empty::before {
-    content: 'Start writing here...';
+[data-rich-editor-content] .ProseMirror p.is-empty:only-child::before {
+    content: 'Start writing here…';
     color: var(--text-faint);
+    pointer-events: none;
+    float: left;
+    height: 0;
 }
 
 .button-auth {
@@ -1663,7 +1749,7 @@ a {
     }
 
     .news-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .home-hero__layout {

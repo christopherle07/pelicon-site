@@ -1,5 +1,12 @@
 import './bootstrap';
 import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
+import { Editor } from '@tiptap/core';
+import { StarterKit } from '@tiptap/starter-kit';
+import { Underline } from '@tiptap/extension-underline';
+import { Link } from '@tiptap/extension-link';
+import { TextAlign } from '@tiptap/extension-text-align';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Color } from '@tiptap/extension-color';
 
 window.Alpine = Alpine;
 Livewire.start();
@@ -284,177 +291,197 @@ const initializeTypingTitle = () => {
     window.setTimeout(typeNextCharacter, randomBetween(320, 540));
 };
 
-const saveEditorSelection = (root, content) => {
-    const selection = window.getSelection();
+// ─── Rich editor (Tiptap) ─────────────────────────────────────────────────
 
-    if (!selection || selection.rangeCount === 0) {
-        return;
-    }
+const ALIGN_CYCLE = ['left', 'center', 'right'];
 
-    const range = selection.getRangeAt(0);
-
-    if (!content.contains(range.commonAncestorContainer)) {
-        return;
-    }
-
-    root._savedRange = range.cloneRange();
+const EDITOR_ICONS = {
+    link: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+    unlink: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="4.93" y1="19.07" x2="19.07" y2="4.93"/></svg>`,
+    alignLeft: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="14" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`,
+    alignCenter: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`,
+    alignRight: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`,
 };
 
-const restoreEditorSelection = (root, content) => {
-    const selection = window.getSelection();
-
-    if (!selection || !root._savedRange) {
-        return false;
-    }
-
-    content.focus();
-    selection.removeAllRanges();
-    selection.addRange(root._savedRange);
-
-    return true;
-};
-
-const wrapEditorSelection = (root, content, styles) => {
-    const restored = restoreEditorSelection(root, content);
-    const selection = window.getSelection();
-
-    if (!restored || !selection || selection.rangeCount === 0 || selection.isCollapsed) {
+const syncEditorToolbar = (editor, root) => {
+    const toolbar = root.querySelector('[data-tiptap-toolbar]');
+    if (!toolbar) {
         return;
     }
 
-    const range = selection.getRangeAt(0);
-    const span = document.createElement('span');
-
-    Object.entries(styles).forEach(([property, value]) => {
-        span.style[property] = value;
+    [
+        ['bold', () => editor.isActive('bold')],
+        ['italic', () => editor.isActive('italic')],
+        ['underline', () => editor.isActive('underline')],
+        ['strike', () => editor.isActive('strike')],
+        ['h2', () => editor.isActive('heading', { level: 2 })],
+        ['h3', () => editor.isActive('heading', { level: 3 })],
+        ['bulletList', () => editor.isActive('bulletList')],
+        ['orderedList', () => editor.isActive('orderedList')],
+        ['blockquote', () => editor.isActive('blockquote')],
+    ].forEach(([key, check]) => {
+        const btn = toolbar.querySelector(`[data-tt="${key}"]`);
+        if (btn) {
+            btn.classList.toggle('is-active', check());
+        }
     });
 
-    try {
-        range.surroundContents(span);
-    } catch {
-        const fragment = range.extractContents();
-        span.appendChild(fragment);
-        range.insertNode(span);
+    const linkBtn = toolbar.querySelector('[data-tt="link"]');
+    if (linkBtn instanceof HTMLButtonElement) {
+        const inLink = editor.isActive('link');
+        linkBtn.innerHTML = inLink ? EDITOR_ICONS.unlink : EDITOR_ICONS.link;
+        linkBtn.title = inLink ? 'Remove link' : 'Insert link (⌘K)';
+        linkBtn.dataset.ttLinkState = inLink ? 'unlink' : 'link';
     }
 
-    const newRange = document.createRange();
-    newRange.selectNodeContents(span);
-    selection.removeAllRanges();
-    selection.addRange(newRange);
-    root._savedRange = newRange.cloneRange();
+    const alignBtn = toolbar.querySelector('[data-tt="align"]');
+    if (alignBtn instanceof HTMLButtonElement) {
+        const current = ALIGN_CYCLE.find((a) => editor.isActive({ textAlign: a })) || 'left';
+        const iconKey = `align${current.charAt(0).toUpperCase()}${current.slice(1)}`;
+        alignBtn.innerHTML = EDITOR_ICONS[iconKey];
+        alignBtn.dataset.ttAlign = current;
+        alignBtn.title = `Align: ${current} — click to cycle`;
+    }
 };
 
-const initializeRichEditors = () => {
+const initTiptapEditors = () => {
     document.querySelectorAll('[data-rich-editor]').forEach((root) => {
         if (!(root instanceof HTMLElement) || root.dataset.richEditorInitialized === 'true') {
             return;
         }
 
-        const content = root.querySelector('[data-rich-editor-content]');
-        const input = root.querySelector('[data-rich-editor-input]');
-        const toolbar = root.querySelector('.editor-toolbar');
+        root.dataset.richEditorInitialized = 'true';
 
-        if (!(content instanceof HTMLElement) || !(input instanceof HTMLTextAreaElement) || !(toolbar instanceof HTMLElement)) {
+        const contentEl = root.querySelector('[data-rich-editor-content]');
+        const input = root.querySelector('[data-rich-editor-input]');
+        const linkBar = root.querySelector('[data-tt-link-bar]');
+        const linkInput = root.querySelector('[data-tt-link-input]');
+
+        if (!(contentEl instanceof HTMLElement) || !(input instanceof HTMLTextAreaElement)) {
             return;
         }
 
-        root.dataset.richEditorInitialized = 'true';
-        content.innerHTML = input.value.trim() !== '' ? input.value : '';
-
-        const syncInput = () => {
-            input.value = content.innerHTML;
-        };
-
-        const trackSelection = () => saveEditorSelection(root, content);
-
-        ['keyup', 'mouseup', 'focus', 'blur'].forEach((eventName) => {
-            content.addEventListener(eventName, trackSelection);
+        const editor = new Editor({
+            element: contentEl,
+            extensions: [
+                StarterKit,
+                Underline,
+                Link.configure({
+                    openOnClick: false,
+                    HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' },
+                }),
+                TextAlign.configure({ types: ['heading', 'paragraph'] }),
+                TextStyle,
+                Color,
+            ],
+            content: input.value || '',
+            editorProps: {
+                attributes: { class: 'rich-copy', spellcheck: 'true' },
+            },
+            onUpdate: ({ editor }) => {
+                input.value = editor.getHTML();
+                syncEditorToolbar(editor, root);
+            },
+            onSelectionUpdate: ({ editor }) => {
+                syncEditorToolbar(editor, root);
+            },
         });
 
-        content.addEventListener('input', syncInput);
+        syncEditorToolbar(editor, root);
 
-        const form = root.closest('form');
-
-        if (form instanceof HTMLFormElement) {
-            form.addEventListener('submit', syncInput);
-        }
-
-        toolbar.querySelectorAll('button').forEach((button) => {
-            button.addEventListener('mousedown', (event) => {
-                event.preventDefault();
-            });
+        root.closest('form')?.addEventListener('submit', () => {
+            input.value = editor.getHTML();
         });
 
-        toolbar.addEventListener('click', (event) => {
-            const target = event.target instanceof HTMLElement ? event.target.closest('button') : null;
+        root.querySelector('[data-tiptap-toolbar]')?.addEventListener('click', (e) => {
+            const btn = e.target instanceof Element ? e.target.closest('[data-tt]') : null;
 
-            if (!(target instanceof HTMLButtonElement)) {
+            if (!(btn instanceof HTMLElement)) {
                 return;
             }
 
-            if (target.hasAttribute('data-editor-link')) {
-                const url = window.prompt('Enter a link URL');
+            const tt = btn.dataset.tt;
 
-                if (!url) {
-                    return;
+            const actions = {
+                bold: () => editor.chain().focus().toggleBold().run(),
+                italic: () => editor.chain().focus().toggleItalic().run(),
+                underline: () => editor.chain().focus().toggleUnderline().run(),
+                strike: () => editor.chain().focus().toggleStrike().run(),
+                h2: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+                h3: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
+                bulletList: () => editor.chain().focus().toggleBulletList().run(),
+                orderedList: () => editor.chain().focus().toggleOrderedList().run(),
+                blockquote: () => editor.chain().focus().toggleBlockquote().run(),
+                clear: () => editor.chain().focus().clearNodes().unsetAllMarks().run(),
+            };
+
+            if (tt in actions) {
+                actions[tt]();
+                syncEditorToolbar(editor, root);
+                return;
+            }
+
+            if (tt === 'link') {
+                if (btn.dataset.ttLinkState === 'unlink') {
+                    editor.chain().focus().unsetLink().run();
+                    syncEditorToolbar(editor, root);
+                } else if (linkBar instanceof HTMLElement) {
+                    linkBar.hidden = false;
+                    if (linkInput instanceof HTMLInputElement) {
+                        linkInput.value = editor.getAttributes('link').href || '';
+                        linkInput.focus();
+                    }
                 }
-
-                restoreEditorSelection(root, content);
-                document.execCommand('createLink', false, url);
-                trackSelection();
-                syncInput();
-
                 return;
             }
 
-            if (target.hasAttribute('data-editor-clear')) {
-                restoreEditorSelection(root, content);
-                document.execCommand('removeFormat');
-                document.execCommand('unlink');
-                trackSelection();
-                syncInput();
-
+            if (tt === 'align') {
+                const current = btn.dataset.ttAlign || 'left';
+                const next = ALIGN_CYCLE[(ALIGN_CYCLE.indexOf(current) + 1) % ALIGN_CYCLE.length];
+                editor.chain().focus().setTextAlign(next).run();
+                syncEditorToolbar(editor, root);
                 return;
             }
-
-            const command = target.dataset.editorCommand;
-
-            if (!command) {
-                return;
-            }
-
-            restoreEditorSelection(root, content);
-            document.execCommand('styleWithCSS', false, true);
-            document.execCommand(command, false, target.dataset.editorValue || null);
-            trackSelection();
-            syncInput();
         });
 
-        const colorInput = toolbar.querySelector('[data-editor-color]');
+        root.querySelector('[data-tt="color"]')?.addEventListener('input', (e) => {
+            if (!(e.target instanceof HTMLInputElement)) {
+                return;
+            }
+            editor.chain().focus().setColor(e.target.value).run();
+            const dot = root.querySelector('[data-tt-color-dot]');
+            if (dot instanceof HTMLElement) {
+                dot.style.background = e.target.value;
+            }
+        });
 
-        if (colorInput instanceof HTMLInputElement) {
-            colorInput.addEventListener('input', () => {
-                restoreEditorSelection(root, content);
-                document.execCommand('styleWithCSS', false, true);
-                document.execCommand('foreColor', false, colorInput.value);
-                trackSelection();
-                syncInput();
-            });
-        }
-
-        const sizeSelect = toolbar.querySelector('[data-editor-size]');
-
-        if (sizeSelect instanceof HTMLSelectElement) {
-            sizeSelect.addEventListener('change', () => {
-                if (!sizeSelect.value) {
-                    return;
+        if (linkBar instanceof HTMLElement && linkInput instanceof HTMLInputElement) {
+            const applyLink = () => {
+                const url = linkInput.value.trim();
+                if (url) {
+                    editor.chain().focus().setLink({ href: url }).run();
+                } else {
+                    editor.chain().focus().unsetLink().run();
                 }
+                linkBar.hidden = true;
+                syncEditorToolbar(editor, root);
+            };
 
-                wrapEditorSelection(root, content, {
-                    fontSize: sizeSelect.value,
-                });
-                syncInput();
-                sizeSelect.value = '';
+            root.querySelector('[data-tt-link-apply]')?.addEventListener('click', applyLink);
+            root.querySelector('[data-tt-link-cancel]')?.addEventListener('click', () => {
+                linkBar.hidden = true;
+                editor.commands.focus();
+            });
+
+            linkInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    applyLink();
+                }
+                if (e.key === 'Escape') {
+                    linkBar.hidden = true;
+                    editor.commands.focus();
+                }
             });
         }
     });
@@ -516,7 +543,7 @@ if (document.readyState === 'loading') {
         initializeScrollReveal();
         initializeReadMoreCue();
         initializeTypingTitle();
-        initializeRichEditors();
+        initTiptapEditors();
     }, { once: true });
 } else {
     initializeAutoDismiss();
@@ -524,7 +551,7 @@ if (document.readyState === 'loading') {
     initializeScrollReveal();
     initializeReadMoreCue();
     initializeTypingTitle();
-    initializeRichEditors();
+    initTiptapEditors();
 }
 
 document.addEventListener('submit', async (event) => {
