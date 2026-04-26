@@ -1,16 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div>
-            <p class="section-kicker">Account</p>
-            <h2 class="mt-2 text-2xl font-bold tracking-tight text-[color:var(--text-strong)]">
-                {{ __('Settings') }}
-            </h2>
-            <p class="copy-muted mt-3 max-w-2xl text-sm leading-7">
-                Manage your account details, password, two-factor authentication, active sessions, and account deletion settings.
-            </p>
-        </div>
-    </x-slot>
-
     <div class="py-8">
         <div class="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
             @if (Laravel\Fortify\Features::canUpdateProfileInformation())

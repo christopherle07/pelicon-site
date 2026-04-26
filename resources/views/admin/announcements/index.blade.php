@@ -1,19 +1,12 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <p class="section-kicker">Admin</p>
-                <h1 class="mt-2 text-2xl font-bold tracking-tight text-[color:var(--text-strong)]">News</h1>
-            </div>
-
-            <a href="{{ route('admin.news.create') }}" class="button-primary inline-flex px-5 py-3 text-sm font-semibold transition">
-                New announcement
-            </a>
-        </div>
-    </x-slot>
-
     <div class="py-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-end">
+                <a href="{{ route('admin.news.create') }}" class="button-primary inline-flex px-5 py-3 text-sm font-semibold transition">
+                    New announcement
+                </a>
+            </div>
+
             @if (session('status'))
                 <div class="flash-toast surface-panel p-5 text-sm font-medium" data-auto-dismiss="5000" style="color: var(--success);">
                     {{ session('status') }}

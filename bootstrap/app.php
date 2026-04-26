@@ -2,7 +2,6 @@
 
 use App\Http\Middleware\EnsureAdminRole;
 use App\Http\Middleware\EnsureStaffRole;
-use App\Http\Middleware\EnsureStaffTwoFactorIsEnabled;
 use App\Http\Middleware\RedirectUnverifiedUsers;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,7 +22,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => EnsureAdminRole::class,
             'staff' => EnsureStaffRole::class,
-            'staff.2fa' => EnsureStaffTwoFactorIsEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

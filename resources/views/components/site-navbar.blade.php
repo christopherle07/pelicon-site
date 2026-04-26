@@ -77,10 +77,6 @@
                                         {{ __('Manage Account') }}
                                     </div>
 
-                                    <x-dropdown-link href="{{ route('dashboard') }}">
-                                        {{ __('Dashboard') }}
-                                    </x-dropdown-link>
-
                                     <x-dropdown-link href="{{ route('settings') }}">
                                         {{ __('Settings') }}
                                     </x-dropdown-link>
@@ -148,10 +144,6 @@
                         </div>
 
                         <div class="mt-3 space-y-1">
-                            <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                                {{ __('Dashboard') }}
-                            </x-responsive-nav-link>
-
                             <x-responsive-nav-link href="{{ route('settings') }}" :active="request()->routeIs('profile.show') || request()->routeIs('settings')">
                                 {{ __('Settings') }}
                             </x-responsive-nav-link>

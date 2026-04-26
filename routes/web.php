@@ -69,9 +69,7 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::redirect('/dashboard', '/')->name('dashboard');
 });
 
 Route::middleware([
@@ -79,7 +77,6 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
     'staff',
-    'staff.2fa',
 ])->prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/', DashboardController::class)->name('dashboard');
 

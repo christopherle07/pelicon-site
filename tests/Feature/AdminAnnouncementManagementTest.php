@@ -12,6 +12,20 @@ class AdminAnnouncementManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_admin_can_access_admin_dashboard_without_two_factor_enabled(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'email_verified_at' => now(),
+            'two_factor_secret' => null,
+            'two_factor_confirmed_at' => null,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertOk();
+    }
+
     public function test_admin_can_create_and_publish_an_announcement(): void
     {
         $admin = $this->adminUser();
