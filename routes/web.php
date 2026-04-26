@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\HomeController;
@@ -25,6 +26,16 @@ Route::get('/users/{user:name}', [UserProfileController::class, 'show'])->name('
 Route::get('/forum', [ForumController::class, 'index'])->name('forum.index');
 Route::get('/forum/{category:slug}', [ForumController::class, 'show'])->name('forum.show');
 Route::get('/forum/{category:slug}/{thread:slug}', [ForumController::class, 'showThread'])->name('forum.threads.show');
+
+Route::middleware('guest')->group(function (): void {
+    Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
+    Route::post('/register', [RegisteredUserController::class, 'store']);
+    Route::get('/register/complete/{pendingRegistration}/{token}', [RegisteredUserController::class, 'complete'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('register.complete');
+    Route::post('/register/complete/{pendingRegistration}/{token}', [RegisteredUserController::class, 'save'])
+        ->middleware(['signed', 'throttle:6,1']);
+});
 
 Route::middleware([
     'auth:sanctum',
