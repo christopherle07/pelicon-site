@@ -19,8 +19,16 @@
             >
             <div class="h-14 w-full" style="display: flex; width: 100%; justify-content: space-between; gap: 1rem;">
                 <div class="flex shrink-0 items-center">
-                    <a href="{{ route('home') }}" class="font-display text-lg font-bold tracking-tight text-[color:var(--text-strong)]">
-                        {{ config('app.name', 'Pelicon') }}
+                    <a
+                        href="{{ route('home') }}"
+                        class="site-navbar-brand"
+                        :class="{ 'site-navbar-brand--scrolled': scrolled }"
+                        aria-label="{{ config('app.name', 'Pelicon') }}"
+                    >
+                        <img src="{{ asset('assets/peli.svg') }}" alt="" class="site-navbar-brand__icon" aria-hidden="true">
+                        <span class="site-navbar-brand__text" aria-hidden="true">
+                            <span>e</span><span>l</span><span>i</span><span>c</span><span>o</span><span>n</span>
+                        </span>
                     </a>
                 </div>
 

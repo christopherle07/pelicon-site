@@ -1122,6 +1122,120 @@ a {
     color: var(--text-faint);
 }
 
+.site-navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    color: var(--text-strong);
+    font-family: var(--font-display);
+    font-size: 1.08rem;
+    font-weight: 800;
+    line-height: 1;
+    overflow: visible;
+}
+
+.site-navbar-brand__icon {
+    width: 1.46rem;
+    height: 1.5rem;
+    object-fit: contain;
+    transform: translateY(0.03rem);
+    transition: transform 620ms cubic-bezier(0.19, 1, 0.22, 1);
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+.site-navbar-brand__text {
+    display: inline-flex;
+    letter-spacing: 0;
+    margin-left: -0.34rem;
+    transform: translateY(0.12rem);
+    transform-origin: left center;
+    backface-visibility: hidden;
+}
+
+.site-navbar-brand__text span {
+    display: inline-block;
+    transform: translateX(0);
+    opacity: 1;
+    transition:
+        opacity 420ms ease,
+        transform 620ms cubic-bezier(0.19, 1, 0.22, 1);
+    transition-delay: var(--brand-letter-delay, 0ms);
+    will-change: opacity, transform;
+    backface-visibility: hidden;
+}
+
+.site-navbar-brand__text span:nth-child(1) {
+    --brand-letter-delay: 0ms;
+}
+
+.site-navbar-brand__text span:nth-child(2) {
+    --brand-letter-delay: 45ms;
+}
+
+.site-navbar-brand__text span:nth-child(3) {
+    --brand-letter-delay: 90ms;
+}
+
+.site-navbar-brand__text span:nth-child(4) {
+    --brand-letter-delay: 135ms;
+}
+
+.site-navbar-brand__text span:nth-child(5) {
+    --brand-letter-delay: 180ms;
+}
+
+.site-navbar-brand__text span:nth-child(6) {
+    --brand-letter-delay: 225ms;
+}
+
+.site-navbar-brand--scrolled .site-navbar-brand__icon {
+    transform: translate(0.52rem, 0.03rem);
+}
+
+.site-navbar-brand--scrolled .site-navbar-brand__text span {
+    opacity: 0;
+}
+
+.site-navbar-brand--scrolled .site-navbar-brand__text span:nth-child(1) {
+    transform: translateX(-0.34rem);
+}
+
+.site-navbar-brand--scrolled .site-navbar-brand__text span:nth-child(2) {
+    transform: translateX(-0.78rem);
+}
+
+.site-navbar-brand--scrolled .site-navbar-brand__text span:nth-child(3) {
+    transform: translateX(-1.05rem);
+}
+
+.site-navbar-brand--scrolled .site-navbar-brand__text span:nth-child(4) {
+    transform: translateX(-1.42rem);
+}
+
+.site-navbar-brand--scrolled .site-navbar-brand__text span:nth-child(5) {
+    transform: translateX(-1.83rem);
+}
+
+.site-navbar-brand--scrolled .site-navbar-brand__text span:nth-child(6) {
+    transform: translateX(-2.22rem);
+}
+
+.auth-wordmark {
+    font-size: 2.15rem;
+}
+
+.auth-wordmark__icon {
+    width: 2.92rem;
+    height: 3rem;
+    transform: translateY(0.06rem);
+}
+
+.auth-wordmark__text {
+    margin-left: -0.68rem;
+    transform: translateY(0.24rem);
+}
+
 .site-nav-link {
     color: var(--text-base);
     transition: color 150ms ease, opacity 150ms ease;

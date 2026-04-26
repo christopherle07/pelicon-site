@@ -31,7 +31,13 @@ Route::middleware([
     config('jetstream.auth_session'),
 ])->group(function () {
     Route::redirect('/settings', '/user/profile')->name('settings');
+});
 
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
     Route::post('/news/{announcement:slug}/comments', [NewsController::class, 'storeComment'])->name('news.comments.store');
     Route::delete('/news/{announcement:slug}/comments/{comment}', [NewsController::class, 'destroyComment'])->name('news.comments.destroy');
     Route::post('/news/{announcement:slug}/reactions', [NewsController::class, 'react'])->name('news.react');

@@ -48,6 +48,25 @@ class NewsInteractionTest extends TestCase
         ]);
     }
 
+    public function test_unverified_user_cannot_comment_on_a_published_announcement(): void
+    {
+        $user = User::factory()->unverified()->create([
+            'role' => UserRole::User,
+        ]);
+
+        $announcement = $this->publishedAnnouncement();
+
+        $this->actingAs($user)->post(route('news.comments.store', $announcement), [
+            'body' => 'This should wait until the account is verified.',
+        ])->assertRedirect(route('verification.notice', absolute: false));
+
+        $this->assertDatabaseMissing('announcement_comments', [
+            'announcement_id' => $announcement->id,
+            'user_id' => $user->id,
+            'body' => 'This should wait until the account is verified.',
+        ]);
+    }
+
     public function test_authenticated_user_can_react_to_a_published_announcement_without_redirecting(): void
     {
         $user = User::factory()->create([
