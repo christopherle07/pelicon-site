@@ -69,4 +69,17 @@ class EmailVerificationTest extends TestCase
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
     }
+
+    public function test_unverified_users_are_redirected_away_from_profile(): void
+    {
+        if (! Features::enabled(Features::emailVerification())) {
+            $this->markTestSkipped('Email verification not enabled.');
+        }
+
+        $user = User::factory()->unverified()->create();
+
+        $this->actingAs($user)
+            ->get(route('profile.show'))
+            ->assertRedirect(route('verification.notice', absolute: false));
+    }
 }
