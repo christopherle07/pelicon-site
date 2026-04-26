@@ -1221,26 +1221,20 @@ a {
     transform: translateX(-2.22rem);
 }
 
-.auth-brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.65rem;
-    color: var(--text-strong);
-    font-family: var(--font-display);
-    font-size: 2.05rem;
-    font-weight: 800;
-    line-height: 1;
+.auth-wordmark {
+    font-size: 2.15rem;
     pointer-events: none;
 }
 
-.auth-brand__icon {
-    width: 2.7rem;
-    height: 2.7rem;
-    object-fit: contain;
+.auth-wordmark__icon {
+    width: 2.92rem;
+    height: 3rem;
+    transform: translateY(0.06rem);
 }
 
-.auth-brand__text {
-    display: inline-block;
+.auth-wordmark__text {
+    margin-left: -0.68rem;
+    transform: translateY(0.24rem);
 }
 
 .site-nav-link {
