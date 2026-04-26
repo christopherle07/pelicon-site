@@ -1,6 +1,4 @@
-<a href="{{ route('home') }}" class="site-navbar-brand auth-wordmark" aria-label="{{ config('app.name', 'Pelicon') }}">
-    <img src="{{ asset('assets/peli.svg') }}" alt="" class="site-navbar-brand__icon auth-wordmark__icon" aria-hidden="true">
-    <span class="site-navbar-brand__text auth-wordmark__text" aria-hidden="true">
-        <span>e</span><span>l</span><span>i</span><span>c</span><span>o</span><span>n</span>
-    </span>
-</a>
+<div class="auth-brand" aria-label="{{ config('app.name', 'Pelicon') }}" role="img">
+    <img src="{{ asset('assets/peli.svg') }}" alt="" class="auth-brand__icon" aria-hidden="true">
+    <span class="auth-brand__text">{{ config('app.name', 'Pelicon') }}</span>
+</div>

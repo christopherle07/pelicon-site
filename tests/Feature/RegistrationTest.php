@@ -29,8 +29,8 @@ class RegistrationTest extends TestCase
             ->post('/register', [
                 'email' => ' Test@Example.com ',
             ])
-            ->assertRedirect('/register')
-            ->assertSessionHas('status', 'registration-link-sent');
+            ->assertRedirect(route('register.notice', absolute: false))
+            ->assertSessionHas('registration_email', 'test@example.com');
 
         $this->assertGuest();
         $this->assertDatabaseMissing('users', [
@@ -42,6 +42,14 @@ class RegistrationTest extends TestCase
         $this->assertSame('test@example.com', $pendingRegistration->email);
         $this->assertTrue($pendingRegistration->expires_at->isFuture());
         Notification::assertSentOnDemand(CompleteRegistration::class);
+    }
+
+    public function test_registration_notice_screen_can_be_rendered(): void
+    {
+        $this->get(route('register.notice'))
+            ->assertStatus(200)
+            ->assertSee('Check your email')
+            ->assertSee('Go to login');
     }
 
     public function test_registration_request_cannot_use_a_verified_email(): void
@@ -93,7 +101,10 @@ class RegistrationTest extends TestCase
 
         $this->get($this->completionUrl($pendingRegistration, $token))
             ->assertStatus(200)
-            ->assertSee('test@example.com');
+            ->assertSee('name="name"', false)
+            ->assertSee('name="password"', false)
+            ->assertSee('name="password_confirmation"', false)
+            ->assertDontSee('test@example.com');
     }
 
     public function test_registration_completion_creates_a_verified_user(): void
@@ -109,11 +120,19 @@ class RegistrationTest extends TestCase
 
         $user = User::query()->where('email', 'test@example.com')->firstOrFail();
 
-        $this->assertAuthenticatedAs($user);
+        $this->assertGuest();
         $this->assertSame('Test User', $user->name);
         $this->assertTrue($user->hasVerifiedEmail());
         $this->assertSame(0, PendingRegistration::query()->count());
-        $response->assertRedirect(route('dashboard', ['verified' => 1], absolute: false));
+        $response->assertRedirect(route('register.finished', absolute: false));
+    }
+
+    public function test_registration_finished_screen_can_be_rendered(): void
+    {
+        $this->get(route('register.finished'))
+            ->assertStatus(200)
+            ->assertSee('Thank you for registering with us!')
+            ->assertSee('Go to login');
     }
 
     public function test_registration_completion_cannot_use_a_verified_username(): void
@@ -160,7 +179,7 @@ class RegistrationTest extends TestCase
 
         $user = User::query()->where('email', 'test@example.com')->firstOrFail();
 
-        $this->assertAuthenticatedAs($user);
+        $this->assertGuest();
         $this->assertTrue($user->hasVerifiedEmail());
         $this->assertFalse(User::query()->whereKey($legacyUser->id)->exists());
         $this->assertNotSame($legacyUser->id, $user->id);

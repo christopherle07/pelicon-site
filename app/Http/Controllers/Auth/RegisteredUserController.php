@@ -10,12 +10,10 @@ use App\Notifications\CompleteRegistration;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Laravel\Jetstream\Jetstream;
@@ -27,6 +25,11 @@ class RegisteredUserController extends Controller
     public function create(): View
     {
         return view('auth.register');
+    }
+
+    public function notice(): View
+    {
+        return view('auth.registration-check-email');
     }
 
     public function store(Request $request): RedirectResponse
@@ -81,8 +84,8 @@ class RegisteredUserController extends Controller
             ->notify(new CompleteRegistration($pendingRegistration, $token));
 
         return redirect()
-            ->route('register')
-            ->with('status', 'registration-link-sent');
+            ->route('register.notice')
+            ->with('registration_email', $pendingRegistration->email);
     }
 
     public function complete(Request $request, PendingRegistration $pendingRegistration, string $token): View
@@ -93,6 +96,11 @@ class RegisteredUserController extends Controller
             'pendingRegistration' => $pendingRegistration,
             'token' => $token,
         ]);
+    }
+
+    public function finished(): View
+    {
+        return view('auth.registration-complete');
     }
 
     public function save(Request $request, PendingRegistration $pendingRegistration, string $token): RedirectResponse
@@ -108,7 +116,11 @@ class RegisteredUserController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('users', 'name')->whereNotNull('email_verified_at'),
+                function (string $attribute, mixed $value, \Closure $fail) use ($pendingRegistration): void {
+                    if ($this->usernameIsTaken((string) $value, $pendingRegistration->email)) {
+                        $fail(__('This username is already taken.'));
+                    }
+                },
             ],
             'password' => $this->passwordRules(),
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
@@ -136,7 +148,7 @@ class RegisteredUserController extends Controller
                 ]);
             }
 
-            if (User::query()->where('name', $validated['name'])->whereNotNull('email_verified_at')->exists()) {
+            if ($this->usernameIsTaken($validated['name'], $pendingRegistration->email)) {
                 throw ValidationException::withMessages([
                     'name' => __('This username is already taken.'),
                 ]);
@@ -169,9 +181,10 @@ class RegisteredUserController extends Controller
         });
 
         event(new Registered($user));
-        Auth::login($user);
 
-        return redirect()->route('dashboard', ['verified' => 1]);
+        return redirect()
+            ->route('register.finished')
+            ->with('registered_email', $user->email);
     }
 
     private function ensurePendingRegistrationIsValid(PendingRegistration $pendingRegistration, string $token): void
@@ -182,5 +195,17 @@ class RegisteredUserController extends Controller
         ) {
             abort(403);
         }
+    }
+
+    private function usernameIsTaken(string $name, string $email): bool
+    {
+        return User::query()
+            ->where('name', $name)
+            ->where(function ($query) use ($email): void {
+                $query
+                    ->whereNotNull('email_verified_at')
+                    ->orWhere('email', '!=', $email);
+            })
+            ->exists();
     }
 }

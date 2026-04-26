@@ -34,10 +34,30 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->post('/login', [
-            'email' => $user->email,
-            'password' => 'wrong-password',
-        ]);
+        $this->from('/login')
+            ->post('/login', [
+                'email' => $user->email,
+                'password' => 'wrong-password',
+            ])
+            ->assertRedirect('/login')
+            ->assertSessionHasErrors([
+                'password' => 'That password does not match this account.',
+            ]);
+
+        $this->assertGuest();
+    }
+
+    public function test_users_are_told_when_login_email_does_not_exist(): void
+    {
+        $this->from('/login')
+            ->post('/login', [
+                'email' => 'missing@example.com',
+                'password' => 'password',
+            ])
+            ->assertRedirect('/login')
+            ->assertSessionHasErrors([
+                'email' => 'No account exists for that email address.',
+            ]);
 
         $this->assertGuest();
     }
