@@ -176,6 +176,48 @@ class ForumPostingTest extends TestCase
         Notification::assertNotSentTo($owner, ForumReplyPosted::class);
     }
 
+    public function test_forum_reply_notifications_do_not_notify_poster_when_ids_hydrate_as_strings(): void
+    {
+        Notification::fake();
+
+        $poster = User::factory()->create([
+            'role' => UserRole::User,
+        ]);
+
+        $category = ForumCategory::query()->create([
+            'name' => 'General',
+            'slug' => 'general-string-notify-ids',
+            'description' => 'General discussion',
+            'accent_color' => '#666666',
+            'sort_order' => 1,
+        ]);
+
+        $thread = ForumThread::query()->create([
+            'forum_category_id' => $category->id,
+            'user_id' => $poster->id,
+            'title' => 'String notify ids',
+            'slug' => 'string-notify-ids',
+            'body' => 'The poster should not receive their own notification.',
+            'last_posted_at' => now(),
+        ]);
+
+        ForumReply::query()->create([
+            'forum_thread_id' => $thread->id,
+            'user_id' => $poster->id,
+            'body' => 'Earlier reply from the same user.',
+        ]);
+
+        $thread->setRawAttributes(array_merge($thread->getAttributes(), [
+            'user_id' => (string) $poster->id,
+        ]), true);
+
+        $this->actingAs($poster)->post(route('forum.replies.store', [$category, $thread]), [
+            'body' => 'This reply should not notify me.',
+        ])->assertRedirect(route('forum.threads.show', [$category, $thread]));
+
+        Notification::assertNotSentTo($poster, ForumReplyPosted::class);
+    }
+
     public function test_forum_reply_still_posts_when_notification_delivery_fails(): void
     {
         Log::spy();
@@ -307,6 +349,60 @@ class ForumPostingTest extends TestCase
             ->assertSee('Parent reply body.')
             ->assertSee('Nested child reply body.')
             ->assertDontSee('x-show="!collapsed" x-cloak', false);
+    }
+
+    public function test_nested_forum_reply_tree_handles_string_parent_ids_from_database(): void
+    {
+        $user = User::factory()->create([
+            'role' => UserRole::User,
+        ]);
+
+        $category = ForumCategory::query()->create([
+            'name' => 'General',
+            'slug' => 'general-string-parent-ids',
+            'description' => 'General discussion',
+            'accent_color' => '#666666',
+            'sort_order' => 1,
+        ]);
+
+        $thread = ForumThread::query()->create([
+            'forum_category_id' => $category->id,
+            'user_id' => $user->id,
+            'title' => 'String parent id visibility',
+            'slug' => 'string-parent-id-visibility',
+            'body' => 'Nested replies should render even if parent ids hydrate as strings.',
+            'last_posted_at' => now(),
+        ]);
+
+        $parentReply = ForumReply::query()->create([
+            'forum_thread_id' => $thread->id,
+            'user_id' => $user->id,
+            'body' => 'Parent reply with string child.',
+        ]);
+
+        $childReply = ForumReply::query()->create([
+            'forum_thread_id' => $thread->id,
+            'user_id' => $user->id,
+            'parent_id' => $parentReply->id,
+            'body' => 'Child reply with string parent id.',
+        ]);
+
+        $childReply->setRawAttributes(array_merge($childReply->getAttributes(), [
+            'parent_id' => (string) $parentReply->id,
+        ]), true);
+
+        $controller = app(\App\Http\Controllers\ForumController::class);
+        $method = new \ReflectionMethod($controller, 'buildReplyTree');
+        $method->setAccessible(true);
+
+        $replyTree = $method->invoke($controller, new \Illuminate\Database\Eloquent\Collection([
+            $parentReply,
+            $childReply,
+        ]));
+
+        $this->assertCount(1, $replyTree);
+        $this->assertCount(1, $replyTree->first()->children);
+        $this->assertSame('Child reply with string parent id.', $replyTree->first()->children->first()->body);
     }
 
     public function test_authenticated_user_can_toggle_thread_reactions(): void

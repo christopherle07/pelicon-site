@@ -21,6 +21,15 @@ class ForumReply extends Model
         'body',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'forum_thread_id' => 'integer',
+            'user_id' => 'integer',
+            'parent_id' => 'integer',
+        ];
+    }
+
     public function thread(): BelongsTo
     {
         return $this->belongsTo(ForumThread::class, 'forum_thread_id');
@@ -53,7 +62,7 @@ class ForumReply extends Model
 
     public function containsReplyInTree(int $replyId): bool
     {
-        if ($this->id === $replyId) {
+        if ((int) $this->id === $replyId) {
             return true;
         }
 

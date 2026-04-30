@@ -142,10 +142,12 @@ class ForumController extends Controller
         ])->save();
 
         // Notify thread owner + anyone who previously replied, excluding the poster
+        $posterId = (int) $request->user()->id;
         $notifyIds = collect([$thread->user_id])
             ->merge($participantIds)
+            ->map(fn ($id): int => (int) $id)
             ->unique()
-            ->reject(fn ($id) => $id === $request->user()->id);
+            ->reject(fn (int $id): bool => $id === $posterId);
 
         if ($notifyIds->isNotEmpty()) {
             $newReply->load('author', 'thread.category');
@@ -367,7 +369,13 @@ class ForumController extends Controller
     private function buildReplyTree(EloquentCollection $replies, ?int $parentId = null): EloquentCollection
     {
         $branch = $replies
-            ->filter(fn (ForumReply $reply) => $reply->parent_id === $parentId)
+            ->filter(function (ForumReply $reply) use ($parentId): bool {
+                if ($parentId === null) {
+                    return $reply->parent_id === null;
+                }
+
+                return (int) $reply->parent_id === $parentId;
+            })
             ->values();
 
         $branch->each(function (ForumReply $reply) use ($replies): void {
