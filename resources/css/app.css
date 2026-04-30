@@ -1840,14 +1840,21 @@ a {
     color: var(--text-faint);
 }
 
+.rich-copy .embed-block--image,
+.rich-copy .embed-block--video {
+    display: block;
+}
+
 .rich-copy .embed-block--image img {
     display: block;
+    width: 100%;
     border-radius: 0.5rem;
     margin-top: 0;
 }
 
 .rich-copy .embed-block--video iframe {
     display: block;
+    width: 100%;
     border-radius: 0.5rem;
     margin-top: 0;
 }
@@ -1876,19 +1883,23 @@ a {
     background: rgba(31, 37, 29, 0.03);
 }
 
-.embed-node-toggle {
+.embed-node-toggle,
+.embed-node-delete {
     display: inline-flex;
     align-items: center;
     font-size: 0.72rem;
     font-weight: 600;
     padding: 0.18rem 0.55rem;
     border-radius: 0.25rem;
-    background: var(--surface-hover);
-    color: var(--text-faint);
     border: none;
     cursor: pointer;
     white-space: nowrap;
     transition: background 100ms ease, color 100ms ease;
+}
+
+.embed-node-toggle {
+    background: var(--surface-hover);
+    color: var(--text-faint);
 }
 
 .embed-node-toggle.is-active {
@@ -1898,6 +1909,17 @@ a {
 
 .embed-node-toggle:hover {
     opacity: 0.8;
+}
+
+.embed-node-delete {
+    background: transparent;
+    color: var(--text-faint);
+    padding: 0.18rem 0.4rem;
+}
+
+.embed-node-delete:hover {
+    background: var(--danger-soft, rgba(200,60,60,0.12));
+    color: var(--danger, #c83c3c);
 }
 
 .embed-node-url {
@@ -1927,24 +1949,23 @@ a {
 
 .embed-resize-handle {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 1.25rem;
-    height: 1.25rem;
+    bottom: 6px;
+    right: 6px;
+    width: 18px;
+    height: 18px;
     cursor: se-resize;
-    background: var(--accent-strong);
-    border-radius: 0.25rem 0 0 0;
-    opacity: 0;
-    transition: opacity 150ms ease;
-}
-
-.embed-node-wrap:hover .embed-resize-handle {
-    opacity: 0.6;
+    /* grip dot pattern — always visible */
+    background-image:
+        radial-gradient(circle, var(--text-faint, rgba(0,0,0,0.4)) 1.5px, transparent 1.5px);
+    background-size: 5px 5px;
+    background-position: 1px 1px;
+    opacity: 0.55;
+    transition: opacity 120ms ease;
 }
 
 .embed-resize-handle:hover,
 .embed-resize-handle:active {
-    opacity: 1 !important;
+    opacity: 1;
 }
 
 .auth-shell {

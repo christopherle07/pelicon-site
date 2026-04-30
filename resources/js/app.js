@@ -455,7 +455,8 @@ const EmbedNode = Node.create({
                         url: link?.getAttribute('href') ?? null,
                         embedUrl: iframe?.getAttribute('src') ?? null,
                         type: 'video',
-                        width: iframe?.style.maxWidth || '100%',
+                        // width is stored on the figure's style, not the iframe
+                        width: dom.style.maxWidth || '100%',
                         height: iframe?.getAttribute('height') || '400',
                         showEmbed: true,
                     };
@@ -471,7 +472,7 @@ const EmbedNode = Node.create({
                         url: link?.getAttribute('href') ?? null,
                         embedUrl: img?.getAttribute('src') ?? null,
                         type: 'image',
-                        width: img?.style.maxWidth || '100%',
+                        width: dom.style.maxWidth || '100%',
                         height: null,
                         showEmbed: true,
                     };
@@ -497,6 +498,8 @@ const EmbedNode = Node.create({
 
     renderHTML({ node }) {
         const { url, embedUrl, type, width, height, showEmbed } = node.attrs;
+        // normalise to a valid CSS value — "320" → "320px", "100%" / "320px" pass through
+        const cssWidth = width && /^\d+$/.test(String(width)) ? width + 'px' : (width || '100%');
 
         if (!showEmbed) {
             return ['figure', { class: 'embed-block embed-block--link-only' },
@@ -505,52 +508,65 @@ const EmbedNode = Node.create({
         }
 
         if (type === 'image') {
-            return ['figure', { class: 'embed-block embed-block--image' },
-                ['img', { src: embedUrl, style: `max-width:${width}`, loading: 'lazy' }],
+            // max-width lives on the figure so the sanitizer keeps it (figure allows style)
+            return ['figure', { class: 'embed-block embed-block--image', style: `max-width:${cssWidth}` },
+                ['img', { src: embedUrl, loading: 'lazy' }],
                 ['figcaption', ['a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, url]],
             ];
         }
 
-        return ['figure', { class: 'embed-block embed-block--video' },
+        return ['figure', { class: 'embed-block embed-block--video', style: `max-width:${cssWidth}` },
             ['iframe', {
                 src: embedUrl,
                 height: height || '400',
                 frameborder: '0',
                 allowfullscreen: 'true',
                 allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
-                style: `width:100%;max-width:${width};display:block;`,
             }],
             ['figcaption', ['a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, url]],
         ];
     },
 
     addNodeView() {
-        return ({ node: initialNode, updateAttributes }) => {
+        return ({ node: initialNode, getPos, editor, deleteNode }) => {
             let node = initialNode;
             const dom = document.createElement('div');
             dom.className = 'embed-node-view';
 
+            // dispatch a transaction directly — more reliable than updateAttributes
+            const setAttrs = (attrs) => {
+                const pos = typeof getPos === 'function' ? getPos() : undefined;
+                if (typeof pos !== 'number') return;
+                editor.view.dispatch(
+                    editor.view.state.tr.setNodeMarkup(pos, undefined, { ...node.attrs, ...attrs })
+                );
+            };
+
             const render = () => {
                 const { url, embedUrl, type, width, height, showEmbed } = node.attrs;
+                const cssWidth = width && /^\d+$/.test(String(width)) ? width + 'px' : (width || '100%');
                 dom.innerHTML = '';
 
                 // ── control bar ──────────────────────────────────────────
                 const bar = document.createElement('div');
                 bar.className = 'embed-node-bar';
-                bar.dataset.embedControls = '';
 
                 const toggleBtn = document.createElement('button');
                 toggleBtn.type = 'button';
                 toggleBtn.className = 'embed-node-toggle' + (showEmbed ? ' is-active' : '');
                 toggleBtn.textContent = showEmbed ? 'Embed on' : 'Link only';
-                // mousedown: prevent ProseMirror from stealing focus / node-selection
-                toggleBtn.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
-                // click: the actual action
-                toggleBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    updateAttributes({ showEmbed: !node.attrs.showEmbed });
-                });
+                toggleBtn.addEventListener('mousedown', (e) => e.preventDefault());
+                toggleBtn.addEventListener('click', () => setAttrs({ showEmbed: !node.attrs.showEmbed }));
                 bar.appendChild(toggleBtn);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.type = 'button';
+                deleteBtn.className = 'embed-node-delete';
+                deleteBtn.textContent = '✕';
+                deleteBtn.title = 'Remove embed';
+                deleteBtn.addEventListener('mousedown', (e) => e.preventDefault());
+                deleteBtn.addEventListener('click', () => deleteNode());
+                bar.appendChild(deleteBtn);
 
                 const urlRef = document.createElement('a');
                 urlRef.href = url;
@@ -566,7 +582,7 @@ const EmbedNode = Node.create({
                 if (showEmbed) {
                     const wrap = document.createElement('div');
                     wrap.className = 'embed-node-wrap';
-                    wrap.style.maxWidth = /^\d+$/.test(String(width)) ? width + 'px' : width;
+                    wrap.style.maxWidth = cssWidth;
 
                     if (type === 'image') {
                         const img = document.createElement('img');
@@ -591,7 +607,7 @@ const EmbedNode = Node.create({
                     // ── drag-to-resize corner handle ──────────────────────
                     const handle = document.createElement('div');
                     handle.className = 'embed-resize-handle';
-                    handle.title = type === 'video' ? 'Drag to resize' : 'Drag to resize width';
+                    handle.title = type === 'video' ? 'Drag to resize (↔ width, ↕ height)' : 'Drag to resize width';
 
                     handle.addEventListener('mousedown', (e) => {
                         e.preventDefault();
@@ -601,15 +617,13 @@ const EmbedNode = Node.create({
                         const startY = e.clientY;
                         const startW = wrap.offsetWidth;
                         const startH = parseInt(node.attrs.height, 10) || 400;
-
                         const mediaEl = wrap.querySelector('iframe') || wrap.querySelector('img');
 
                         const onMove = (me) => {
                             const newW = Math.max(120, startW + (me.clientX - startX));
                             wrap.style.maxWidth = newW + 'px';
                             if (type === 'video' && mediaEl instanceof HTMLIFrameElement) {
-                                const newH = Math.max(80, startH + (me.clientY - startY));
-                                mediaEl.height = String(newH);
+                                mediaEl.height = String(Math.max(80, startH + (me.clientY - startY)));
                             }
                         };
 
@@ -621,7 +635,7 @@ const EmbedNode = Node.create({
                             if (type === 'video') {
                                 attrs.height = String(Math.max(80, startH + (me.clientY - startY)));
                             }
-                            updateAttributes(attrs);
+                            setAttrs(attrs);
                         };
 
                         document.addEventListener('mousemove', onMove);
@@ -637,19 +651,9 @@ const EmbedNode = Node.create({
 
             return {
                 dom,
-                stopEvent(event) {
-                    // Let ProseMirror handle keyboard events (Backspace/Delete to remove node)
-                    // but stop all mouse events so our controls work uninterrupted
-                    if (event instanceof KeyboardEvent) return false;
-                    const t = event.target;
-                    if (!(t instanceof HTMLElement)) return false;
-                    return t.closest('[data-embed-controls], .embed-resize-handle') !== null;
-                },
-                ignoreMutation() {
-                    // We manage the DOM ourselves in render(); prevent ProseMirror from
-                    // reacting to our innerHTML rebuilds
-                    return true;
-                },
+                // stop all non-keyboard events so ProseMirror never fights our controls
+                stopEvent: (e) => !(e instanceof KeyboardEvent),
+                ignoreMutation: () => true,
                 update(updatedNode) {
                     if (updatedNode.type !== node.type) return false;
                     node = updatedNode;
