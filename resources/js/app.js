@@ -568,13 +568,15 @@ const EmbedNode = Node.create({
                 deleteBtn.addEventListener('click', () => deleteNode());
                 bar.appendChild(deleteBtn);
 
-                const urlRef = document.createElement('a');
-                urlRef.href = url;
-                urlRef.textContent = url;
-                urlRef.target = '_blank';
-                urlRef.rel = 'noopener noreferrer';
-                urlRef.className = 'embed-node-url';
-                bar.appendChild(urlRef);
+                if (!showEmbed) {
+                    const urlRef = document.createElement('a');
+                    urlRef.href = url;
+                    urlRef.textContent = url;
+                    urlRef.target = '_blank';
+                    urlRef.rel = 'noopener noreferrer';
+                    urlRef.className = 'embed-node-url';
+                    bar.appendChild(urlRef);
+                }
 
                 dom.appendChild(bar);
 

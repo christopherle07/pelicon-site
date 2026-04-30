@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\ForumCategory;
 use App\Models\ForumReply;
-use App\Models\Reaction;
 use App\Models\ForumThread;
+use App\Models\Reaction;
+use App\Models\User;
+use App\Notifications\ForumReplyPosted;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -118,7 +121,12 @@ class ForumController extends Controller
                 ->firstOrFail();
         }
 
-        $thread->replies()->create([
+        // Collect existing participant IDs before creating the new reply
+        $participantIds = ForumReply::query()
+            ->where('forum_thread_id', $thread->id)
+            ->pluck('user_id');
+
+        $newReply = $thread->replies()->create([
             'user_id' => $request->user()->id,
             'parent_id' => $parentReply?->id,
             'body' => trim($validated['body']),
@@ -127,6 +135,18 @@ class ForumController extends Controller
         $thread->forceFill([
             'last_posted_at' => now(),
         ])->save();
+
+        // Notify thread owner + anyone who previously replied, excluding the poster
+        $notifyIds = collect([$thread->user_id])
+            ->merge($participantIds)
+            ->unique()
+            ->reject(fn ($id) => $id === $request->user()->id);
+
+        if ($notifyIds->isNotEmpty()) {
+            $newReply->load('author', 'thread.category');
+            $recipients = User::whereIn('id', $notifyIds)->get();
+            Notification::send($recipients, new ForumReplyPosted($newReply));
+        }
 
         return redirect()
             ->route('forum.threads.show', [$category, $thread])
