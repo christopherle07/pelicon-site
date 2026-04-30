@@ -174,8 +174,8 @@ const initializeScrollReveal = () => {
             observer.unobserve(entry.target);
         });
     }, {
-        rootMargin: '0px 0px -12% 0px',
-        threshold: 0.18,
+        rootMargin: '0px 0px 20% 0px',
+        threshold: 0,
     });
 
     revealElements.forEach((element) => observer.observe(element));

@@ -5,7 +5,7 @@
             <p class="section-kicker">Forum</p>
             <h1 class="title-section mt-3 text-4xl sm:text-5xl">Community Forum</h1>
             <p class="copy-muted mt-4 max-w-2xl text-base leading-8">
-                Browse current discussions, preview real thread states while styling locally, and keep the forum feeling alive during development.
+               Welcome to our forum page. Here you can ask for help, share your suggestions, or view what others have to say.
             </p>
         </section>
 
