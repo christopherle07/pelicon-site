@@ -1743,6 +1743,16 @@ a {
     margin-top: 1rem;
 }
 
+.rich-copy h1 {
+    color: var(--text-strong);
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.2;
+    margin-top: 2rem;
+}
+
 .rich-copy h2 {
     color: var(--text-strong);
     font-family: var(--font-display);
@@ -1873,40 +1883,21 @@ a {
     font-weight: 600;
     padding: 0.18rem 0.55rem;
     border-radius: 0.25rem;
-    background: var(--accent-soft);
-    color: var(--accent-strong);
+    background: var(--surface-hover);
+    color: var(--text-faint);
     border: none;
     cursor: pointer;
     white-space: nowrap;
-    transition: opacity 100ms ease;
+    transition: background 100ms ease, color 100ms ease;
 }
 
-.embed-node-toggle.is-link-only {
-    background: var(--surface-hover);
-    color: var(--text-faint);
+.embed-node-toggle.is-active {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
 }
 
 .embed-node-toggle:hover {
-    opacity: 0.75;
-}
-
-.embed-node-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.72rem;
-    color: var(--text-faint);
-}
-
-.embed-node-input {
-    width: 5.5rem;
-    background: var(--bg-app);
-    border: 1px solid var(--border-subtle);
-    border-radius: 0.25rem;
-    padding: 0.12rem 0.4rem;
-    font-size: 0.72rem;
-    color: var(--text-strong);
-    outline: none;
+    opacity: 0.8;
 }
 
 .embed-node-url {
@@ -1920,13 +1911,40 @@ a {
     margin-left: auto;
 }
 
+.embed-node-wrap {
+    position: relative;
+}
+
 .embed-node-preview {
     display: block;
+    width: 100%;
 }
 
 .embed-node-iframe {
     border: none;
     display: block;
+}
+
+.embed-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: se-resize;
+    background: var(--accent-strong);
+    border-radius: 0.25rem 0 0 0;
+    opacity: 0;
+    transition: opacity 150ms ease;
+}
+
+.embed-node-wrap:hover .embed-resize-handle {
+    opacity: 0.6;
+}
+
+.embed-resize-handle:hover,
+.embed-resize-handle:active {
+    opacity: 1 !important;
 }
 
 .auth-shell {

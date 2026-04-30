@@ -74,6 +74,7 @@
 
                                         {{-- Headings --}}
                                         <div class="editor-group">
+                                            <button type="button" class="editor-tool editor-tool--label" data-tt="h1" title="Heading 1">H1</button>
                                             <button type="button" class="editor-tool editor-tool--label" data-tt="h2" title="Heading 2">H2</button>
                                             <button type="button" class="editor-tool editor-tool--label" data-tt="h3" title="Heading 3">H3</button>
                                         </div>

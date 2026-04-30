@@ -322,6 +322,7 @@ const syncEditorToolbar = (editor, root) => {
         ['italic', () => editor.isActive('italic')],
         ['underline', () => editor.isActive('underline')],
         ['strike', () => editor.isActive('strike')],
+        ['h1', () => editor.isActive('heading', { level: 1 })],
         ['h2', () => editor.isActive('heading', { level: 2 })],
         ['h3', () => editor.isActive('heading', { level: 3 })],
         ['bulletList', () => editor.isActive('bulletList')],
@@ -528,52 +529,28 @@ const EmbedNode = Node.create({
             let node = initialNode;
             const dom = document.createElement('div');
             dom.className = 'embed-node-view';
-            dom.contentEditable = 'false';
 
             const render = () => {
                 const { url, embedUrl, type, width, height, showEmbed } = node.attrs;
                 dom.innerHTML = '';
 
+                // ── control bar ──────────────────────────────────────────
                 const bar = document.createElement('div');
                 bar.className = 'embed-node-bar';
+                bar.dataset.embedControls = '';
 
                 const toggleBtn = document.createElement('button');
                 toggleBtn.type = 'button';
-                toggleBtn.className = 'embed-node-toggle' + (showEmbed ? '' : ' is-link-only');
+                toggleBtn.className = 'embed-node-toggle' + (showEmbed ? ' is-active' : '');
                 toggleBtn.textContent = showEmbed ? 'Embed on' : 'Link only';
-                toggleBtn.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
+                // mousedown: prevent ProseMirror from stealing focus / node-selection
+                toggleBtn.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+                // click: the actual action
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     updateAttributes({ showEmbed: !node.attrs.showEmbed });
                 });
                 bar.appendChild(toggleBtn);
-
-                if (showEmbed) {
-                    const wLabel = document.createElement('label');
-                    wLabel.className = 'embed-node-label';
-                    wLabel.textContent = 'W:';
-                    const wInput = document.createElement('input');
-                    wInput.type = 'text';
-                    wInput.value = width;
-                    wInput.className = 'embed-node-input';
-                    wInput.addEventListener('mousedown', (e) => e.stopPropagation());
-                    wInput.addEventListener('change', () => updateAttributes({ width: wInput.value }));
-                    wLabel.appendChild(wInput);
-                    bar.appendChild(wLabel);
-
-                    if (type === 'video') {
-                        const hLabel = document.createElement('label');
-                        hLabel.className = 'embed-node-label';
-                        hLabel.textContent = 'H:';
-                        const hInput = document.createElement('input');
-                        hInput.type = 'text';
-                        hInput.value = height || '400';
-                        hInput.className = 'embed-node-input';
-                        hInput.addEventListener('mousedown', (e) => e.stopPropagation());
-                        hInput.addEventListener('change', () => updateAttributes({ height: hInput.value }));
-                        hLabel.appendChild(hInput);
-                        bar.appendChild(hLabel);
-                    }
-                }
 
                 const urlRef = document.createElement('a');
                 urlRef.href = url;
@@ -581,22 +558,24 @@ const EmbedNode = Node.create({
                 urlRef.target = '_blank';
                 urlRef.rel = 'noopener noreferrer';
                 urlRef.className = 'embed-node-url';
-                urlRef.addEventListener('mousedown', (e) => e.stopPropagation());
                 bar.appendChild(urlRef);
 
                 dom.appendChild(bar);
 
+                // ── preview ──────────────────────────────────────────────
                 if (showEmbed) {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'embed-node-wrap';
+                    wrap.style.maxWidth = /^\d+$/.test(String(width)) ? width + 'px' : width;
+
                     if (type === 'image') {
                         const img = document.createElement('img');
                         img.src = embedUrl;
-                        img.style.maxWidth = width;
                         img.style.display = 'block';
+                        img.style.width = '100%';
                         img.className = 'embed-node-preview';
-                        dom.appendChild(img);
+                        wrap.appendChild(img);
                     } else {
-                        const wrap = document.createElement('div');
-                        wrap.style.maxWidth = width;
                         const iframe = document.createElement('iframe');
                         iframe.src = embedUrl;
                         iframe.width = '100%';
@@ -607,8 +586,50 @@ const EmbedNode = Node.create({
                         iframe.style.display = 'block';
                         iframe.className = 'embed-node-iframe';
                         wrap.appendChild(iframe);
-                        dom.appendChild(wrap);
                     }
+
+                    // ── drag-to-resize corner handle ──────────────────────
+                    const handle = document.createElement('div');
+                    handle.className = 'embed-resize-handle';
+                    handle.title = type === 'video' ? 'Drag to resize' : 'Drag to resize width';
+
+                    handle.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        const startX = e.clientX;
+                        const startY = e.clientY;
+                        const startW = wrap.offsetWidth;
+                        const startH = parseInt(node.attrs.height, 10) || 400;
+
+                        const mediaEl = wrap.querySelector('iframe') || wrap.querySelector('img');
+
+                        const onMove = (me) => {
+                            const newW = Math.max(120, startW + (me.clientX - startX));
+                            wrap.style.maxWidth = newW + 'px';
+                            if (type === 'video' && mediaEl instanceof HTMLIFrameElement) {
+                                const newH = Math.max(80, startH + (me.clientY - startY));
+                                mediaEl.height = String(newH);
+                            }
+                        };
+
+                        const onUp = (me) => {
+                            document.removeEventListener('mousemove', onMove);
+                            document.removeEventListener('mouseup', onUp);
+                            const newW = Math.max(120, startW + (me.clientX - startX));
+                            const attrs = { width: newW + 'px' };
+                            if (type === 'video') {
+                                attrs.height = String(Math.max(80, startH + (me.clientY - startY)));
+                            }
+                            updateAttributes(attrs);
+                        };
+
+                        document.addEventListener('mousemove', onMove);
+                        document.addEventListener('mouseup', onUp);
+                    });
+
+                    wrap.appendChild(handle);
+                    dom.appendChild(wrap);
                 }
             };
 
@@ -616,6 +637,19 @@ const EmbedNode = Node.create({
 
             return {
                 dom,
+                stopEvent(event) {
+                    // Let ProseMirror handle keyboard events (Backspace/Delete to remove node)
+                    // but stop all mouse events so our controls work uninterrupted
+                    if (event instanceof KeyboardEvent) return false;
+                    const t = event.target;
+                    if (!(t instanceof HTMLElement)) return false;
+                    return t.closest('[data-embed-controls], .embed-resize-handle') !== null;
+                },
+                ignoreMutation() {
+                    // We manage the DOM ourselves in render(); prevent ProseMirror from
+                    // reacting to our innerHTML rebuilds
+                    return true;
+                },
                 update(updatedNode) {
                     if (updatedNode.type !== node.type) return false;
                     node = updatedNode;
@@ -724,6 +758,7 @@ const initTiptapEditors = () => {
                 italic: () => editor.chain().focus().toggleItalic().run(),
                 underline: () => editor.chain().focus().toggleUnderline().run(),
                 strike: () => editor.chain().focus().toggleStrike().run(),
+                h1: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
                 h2: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
                 h3: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
                 bulletList: () => editor.chain().focus().toggleBulletList().run(),
