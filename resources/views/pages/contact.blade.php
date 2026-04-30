@@ -5,6 +5,7 @@
         <div class="copy-base mt-6 space-y-4 text-base leading-8">
             <p>The best place to reach the team right now is the forum. It keeps questions, bug reports, and suggestions in one place so nothing gets lost.</p>
             <p>If you want support or feedback, open a thread in the forum and include as much detail as you can.</p>
+            <p>For important enquiries please contact us via email: <a href="mailto:hi@pelicon.app" class="underline underline-offset-2">hi@pelicon.app</a></p>
         </div>
 
         <div class="mt-8">
