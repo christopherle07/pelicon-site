@@ -8,6 +8,7 @@ use App\Models\ForumThread;
 use App\Models\Reaction;
 use App\Models\User;
 use App\Notifications\ForumReplyPosted;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -16,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Throwable;
 
 class ForumController extends Controller
 {
@@ -151,7 +153,18 @@ class ForumController extends Controller
                 ->whereIn('id', $notifyIds)
                 ->where('forum_notifications_enabled', true)
                 ->get();
-            Notification::send($recipients, new ForumReplyPosted($newReply));
+
+            try {
+                Notification::send($recipients, new ForumReplyPosted($newReply));
+            } catch (Throwable $exception) {
+                Log::warning('Forum reply notification failed.', [
+                    'reply_id' => $newReply->id,
+                    'thread_id' => $thread->id,
+                    'recipient_ids' => $recipients->pluck('id')->all(),
+                    'exception' => $exception::class,
+                    'message' => $exception->getMessage(),
+                ]);
+            }
         }
 
         return redirect()

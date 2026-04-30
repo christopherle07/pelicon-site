@@ -9,6 +9,7 @@ use App\Models\ForumThread;
 use App\Models\User;
 use App\Notifications\ForumReplyPosted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -173,6 +174,52 @@ class ForumPostingTest extends TestCase
         ])->assertRedirect(route('forum.threads.show', [$category, $thread]));
 
         Notification::assertNotSentTo($owner, ForumReplyPosted::class);
+    }
+
+    public function test_forum_reply_still_posts_when_notification_delivery_fails(): void
+    {
+        Log::spy();
+        Notification::shouldReceive('send')
+            ->once()
+            ->andThrow(new \RuntimeException('SMTP failed'));
+
+        $owner = User::factory()->create([
+            'role' => UserRole::User,
+        ]);
+
+        $author = User::factory()->create([
+            'role' => UserRole::User,
+        ]);
+
+        $category = ForumCategory::query()->create([
+            'name' => 'General',
+            'slug' => 'general-failure-test',
+            'description' => 'General discussion',
+            'accent_color' => '#666666',
+            'sort_order' => 1,
+        ]);
+
+        $thread = ForumThread::query()->create([
+            'forum_category_id' => $category->id,
+            'user_id' => $owner->id,
+            'title' => 'Notification failure test',
+            'slug' => 'notification-failure-test',
+            'body' => 'Reply posting should not depend on notification delivery.',
+            'last_posted_at' => now(),
+        ]);
+
+        $this->actingAs($author)->post(route('forum.replies.store', [$category, $thread]), [
+            'body' => 'This reply should save even if notification delivery fails.',
+        ])->assertRedirect(route('forum.threads.show', [$category, $thread]));
+
+        $this->assertDatabaseHas('forum_replies', [
+            'forum_thread_id' => $thread->id,
+            'user_id' => $author->id,
+            'body' => 'This reply should save even if notification delivery fails.',
+        ]);
+
+        Log::shouldHaveReceived('warning')
+            ->with('Forum reply notification failed.', \Mockery::on(fn (array $context): bool => $context['thread_id'] === $thread->id));
     }
 
     public function test_authenticated_user_can_reply_to_an_existing_reply(): void
