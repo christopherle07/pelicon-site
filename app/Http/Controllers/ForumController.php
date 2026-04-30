@@ -84,6 +84,8 @@ class ForumController extends Controller
 
     public function storeThread(Request $request, ForumCategory $category): RedirectResponse
     {
+        abort_if($request->user()->isLocked(), 403);
+
         $validated = $request->validateWithBag('createThread', [
             'title' => ['required', 'string', 'min:4', 'max:140'],
             'body' => ['required', 'string', 'min:10', 'max:20000'],
@@ -105,6 +107,7 @@ class ForumController extends Controller
     public function storeReply(Request $request, ForumCategory $category, ForumThread $thread): RedirectResponse
     {
         abort_unless($this->threadBelongsToCategory($thread, $category), 404);
+        abort_if($request->user()->isLocked(), 403);
         abort_unless($request->user()->canReplyToForumThread($thread), 403);
 
         $validated = $request->validateWithBag('replyThread', [

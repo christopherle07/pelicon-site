@@ -47,6 +47,7 @@ class NewsController extends Controller
     public function storeComment(Request $request, Announcement $announcement): RedirectResponse
     {
         abort_unless($announcement->status === 'published', 404);
+        abort_if($request->user()->isLocked(), 403);
 
         $validated = $request->validateWithBag('announcementComment', [
             'body' => ['required', 'string', 'min:2', 'max:5000'],

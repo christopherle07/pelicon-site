@@ -9,21 +9,59 @@
                         <div class="mt-2 flex flex-wrap items-center gap-2 text-sm copy-faint">
                             <span>Joined {{ $profileUser->created_at->format('M Y') }}</span>
                             <x-staff-badge :user="$profileUser" />
+                            @if ($profileUser->isLocked())
+                                <span class="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide" style="background: var(--danger-soft); color: var(--danger);">Locked</span>
+                            @endif
                         </div>
                     </div>
                 </div>
 
-                <form method="GET" action="{{ route('users.show', ['user' => $profileUser->name]) }}" class="w-full sm:max-w-xs">
-                    <label for="profile_sort" class="section-kicker">Sort Posts</label>
-                    <div class="select-shell mt-3">
-                        <select id="profile_sort" name="sort" class="select-input" onchange="this.form.submit()">
-                            @foreach ($sortOptions as $key => $option)
-                                <option value="{{ $key }}" @selected($sort === $key)>{{ $option['label'] }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </form>
+                <div class="w-full space-y-4 sm:max-w-xs">
+                    @auth
+                        @if (auth()->user()->canLockAccount($profileUser))
+                            @if ($profileUser->isLocked())
+                                <form method="POST" action="{{ route('users.unlock', ['user' => $profileUser->name]) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="button-secondary inline-flex w-full items-center justify-center px-5 py-3 text-sm font-semibold transition">
+                                        Unlock account
+                                    </button>
+                                </form>
+                            @else
+                                <form method="POST" action="{{ route('users.lock', ['user' => $profileUser->name]) }}" onsubmit="return confirm('Lock this account from posting comments and forum threads?');">
+                                    @csrf
+                                    <button type="submit" class="inline-flex w-full items-center justify-center px-5 py-3 text-sm font-semibold transition" style="background: var(--danger-soft); color: var(--danger);">
+                                        Lock account
+                                    </button>
+                                </form>
+                            @endif
+                        @endif
+                    @endauth
+
+                    <form method="GET" action="{{ route('users.show', ['user' => $profileUser->name]) }}">
+                        <label for="profile_sort" class="section-kicker">Sort Posts</label>
+                        <div class="select-shell mt-3">
+                            <select id="profile_sort" name="sort" class="select-input" onchange="this.form.submit()">
+                                @foreach ($sortOptions as $key => $option)
+                                    <option value="{{ $key }}" @selected($sort === $key)>{{ $option['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </form>
+                </div>
             </div>
+
+            @if (session('status'))
+                <div class="mt-6 text-sm font-semibold" style="color: var(--success);">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            @if ($profileUser->isLocked())
+                <div class="mt-6 border-t pt-4 text-sm leading-6 copy-muted" style="border-color: var(--border-subtle);">
+                    This account cannot post news comments, forum threads, or forum replies while locked.
+                </div>
+            @endif
         </section>
 
         <section class="space-y-4">

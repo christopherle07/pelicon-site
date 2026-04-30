@@ -73,6 +73,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'role' => UserRole::class,
             'two_factor_confirmed_at' => 'datetime',
             'forum_notifications_enabled' => 'boolean',
+            'locked_at' => 'datetime',
         ];
     }
 
@@ -126,6 +127,20 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role->isStaff();
     }
 
+    public function isLocked(): bool
+    {
+        return filled($this->locked_at);
+    }
+
+    public function canLockAccount(User $user): bool
+    {
+        if ($this->id === $user->id || $user->isAdmin()) {
+            return false;
+        }
+
+        return $this->isAdmin() || ($this->isModerator() && ! $user->isStaff());
+    }
+
     public function hasConfirmedTwoFactor(): bool
     {
         return filled($this->two_factor_secret) && filled($this->two_factor_confirmed_at);
@@ -148,6 +163,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function canReplyToForumThread(ForumThread $thread): bool
     {
-        return ! $thread->is_locked || $this->isStaff();
+        return ! $this->isLocked() && (! $thread->is_locked || $this->isStaff());
     }
 }
