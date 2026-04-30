@@ -7,7 +7,9 @@ use App\Models\ForumCategory;
 use App\Models\ForumReply;
 use App\Models\ForumThread;
 use App\Models\User;
+use App\Notifications\ForumReplyPosted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class ForumPostingTest extends TestCase
@@ -46,6 +48,8 @@ class ForumPostingTest extends TestCase
 
     public function test_authenticated_user_can_reply_to_a_thread(): void
     {
+        Notification::fake();
+
         $user = User::factory()->create([
             'role' => UserRole::User,
         ]);
@@ -78,6 +82,60 @@ class ForumPostingTest extends TestCase
             'user_id' => $user->id,
             'body' => 'You can drag the edges of the window or reset it from settings.',
         ]);
+    }
+
+    public function test_forum_reply_notification_uses_dedicated_mailer_and_light_template(): void
+    {
+        config([
+            'mail.forum_notifications.from.address' => 'notifications@pelicon.app',
+            'mail.forum_notifications.from.name' => 'Pelicon Forum',
+        ]);
+
+        $owner = User::factory()->create([
+            'role' => UserRole::User,
+            'name' => 'Thread Owner',
+        ]);
+
+        $author = User::factory()->create([
+            'role' => UserRole::User,
+            'name' => 'Reply Author',
+        ]);
+
+        $category = ForumCategory::query()->create([
+            'name' => 'General',
+            'slug' => 'general',
+            'description' => 'General discussion',
+            'accent_color' => '#666666',
+            'sort_order' => 1,
+        ]);
+
+        $thread = ForumThread::query()->create([
+            'forum_category_id' => $category->id,
+            'user_id' => $owner->id,
+            'title' => 'Notification styling test',
+            'slug' => 'notification-styling-test',
+            'body' => 'Testing email output.',
+            'last_posted_at' => now(),
+        ]);
+
+        $reply = ForumReply::query()->create([
+            'forum_thread_id' => $thread->id,
+            'user_id' => $author->id,
+            'body' => 'This email should be light and should not use the account verification mailbox.',
+        ])->load('author', 'thread.category');
+
+        $mail = (new ForumReplyPosted($reply))->toMail($owner);
+
+        $this->assertSame('forum_notifications', $mail->mailer);
+        $this->assertSame(['notifications@pelicon.app', 'Pelicon Forum'], $mail->from);
+        $this->assertSame('emails.forum-reply', $mail->view);
+
+        $html = view($mail->view, $mail->viewData)->render();
+
+        $this->assertStringContainsString('background:#f4f1e8', $html);
+        $this->assertStringContainsString('View reply', $html);
+        $this->assertStringNotContainsString('background:#0f1010', $html);
+        $this->assertStringNotContainsString('no-reply@pelicon.app', $html);
     }
 
     public function test_authenticated_user_can_reply_to_an_existing_reply(): void
@@ -376,6 +434,8 @@ class ForumPostingTest extends TestCase
 
     public function test_staff_can_manage_any_thread_and_reply_to_locked_threads(): void
     {
+        Notification::fake();
+
         $author = User::factory()->create([
             'role' => UserRole::User,
         ]);

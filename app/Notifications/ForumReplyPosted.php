@@ -34,6 +34,11 @@ class ForumReplyPosted extends Notification implements ShouldQueue
         $url = route('forum.threads.show', [$category, $thread]).'#reply-'.$this->reply->id;
 
         return (new MailMessage)
+            ->mailer('forum_notifications')
+            ->from(
+                config('mail.forum_notifications.from.address'),
+                config('mail.forum_notifications.from.name'),
+            )
             ->subject($this->reply->author->name.' replied in "'.$thread->title.'"')
             ->view('emails.forum-reply', [
                 'reply' => $this->reply,
