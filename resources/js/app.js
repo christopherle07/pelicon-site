@@ -164,17 +164,27 @@ const initializeScrollReveal = () => {
         return;
     }
 
+    let scrollingDown = true;
+    let lastScrollY = window.scrollY;
+
+    window.addEventListener('scroll', () => {
+        scrollingDown = window.scrollY >= lastScrollY;
+        lastScrollY = window.scrollY;
+    }, { passive: true });
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
             if (!entry.isIntersecting || !(entry.target instanceof HTMLElement)) {
                 return;
             }
 
+            entry.target.dataset.scrollRevealFrom = scrollingDown ? 'below' : 'above';
+            entry.target.offsetHeight; // force reflow so the starting transform is applied before transition
             entry.target.classList.add('is-visible');
             observer.unobserve(entry.target);
         });
     }, {
-        rootMargin: '0px 0px 20% 0px',
+        rootMargin: '20% 0px 20% 0px',
         threshold: 0,
     });
 
