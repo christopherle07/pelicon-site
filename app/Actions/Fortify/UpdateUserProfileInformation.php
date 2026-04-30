@@ -20,6 +20,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255', Rule::unique('users', 'name')->ignore($user->id)],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'forum_notifications_enabled' => ['boolean'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
         ])->validateWithBag('updateProfileInformation');
 
@@ -34,6 +35,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user->forceFill([
                 'name' => trim($input['name']),
                 'email' => $input['email'],
+                'forum_notifications_enabled' => (bool) ($input['forum_notifications_enabled'] ?? $user->forum_notifications_enabled ?? true),
             ])->save();
         }
     }
@@ -49,6 +51,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'name' => trim($input['name']),
             'email' => $input['email'],
             'email_verified_at' => null,
+            'forum_notifications_enabled' => (bool) ($input['forum_notifications_enabled'] ?? $user->forum_notifications_enabled ?? true),
         ])->save();
 
         $user->sendEmailVerificationNotification();

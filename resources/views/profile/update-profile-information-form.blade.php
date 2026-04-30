@@ -81,6 +81,26 @@
                 @endif
             @endif
         </div>
+
+        <!-- Forum Notifications -->
+        <div class="col-span-6 sm:col-span-4">
+            <label for="forum_notifications_enabled" class="flex items-start gap-3">
+                <x-checkbox
+                    id="forum_notifications_enabled"
+                    wire:model="state.forum_notifications_enabled"
+                    class="mt-1"
+                />
+                <span>
+                    <span class="block text-sm font-semibold" style="color: var(--text-strong);">
+                        {{ __('Forum email notifications') }}
+                    </span>
+                    <span class="mt-1 block text-sm copy-muted">
+                        {{ __('Email me when someone replies to a forum thread I own or participated in.') }}
+                    </span>
+                </span>
+            </label>
+            <x-input-error for="forum_notifications_enabled" class="mt-2" />
+        </div>
     </x-slot>
 
     <x-slot name="actions">

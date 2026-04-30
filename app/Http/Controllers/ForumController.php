@@ -144,7 +144,10 @@ class ForumController extends Controller
 
         if ($notifyIds->isNotEmpty()) {
             $newReply->load('author', 'thread.category');
-            $recipients = User::whereIn('id', $notifyIds)->get();
+            $recipients = User::query()
+                ->whereIn('id', $notifyIds)
+                ->where('forum_notifications_enabled', true)
+                ->get();
             Notification::send($recipients, new ForumReplyPosted($newReply));
         }
 

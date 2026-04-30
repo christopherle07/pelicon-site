@@ -36,6 +36,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'role',
         'password',
+        'forum_notifications_enabled',
     ];
 
     /**
@@ -71,6 +72,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'role' => UserRole::class,
             'two_factor_confirmed_at' => 'datetime',
+            'forum_notifications_enabled' => 'boolean',
         ];
     }
 

@@ -29,7 +29,8 @@ Route::get('/forum/{category:slug}/{thread:slug}', [ForumController::class, 'sho
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
-    Route::post('/register', [RegisteredUserController::class, 'store']);
+    Route::post('/register', [RegisteredUserController::class, 'store'])
+        ->middleware('throttle:5,1');
     Route::get('/register/check-email', [RegisteredUserController::class, 'notice'])->name('register.notice');
     Route::get('/register/finished', [RegisteredUserController::class, 'finished'])->name('register.finished');
     Route::get('/register/complete/{pendingRegistration}/{token}', [RegisteredUserController::class, 'complete'])

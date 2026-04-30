@@ -138,6 +138,43 @@ class ForumPostingTest extends TestCase
         $this->assertStringNotContainsString('no-reply@pelicon.app', $html);
     }
 
+    public function test_forum_reply_notifications_skip_users_who_disabled_them(): void
+    {
+        Notification::fake();
+
+        $owner = User::factory()->create([
+            'role' => UserRole::User,
+            'forum_notifications_enabled' => false,
+        ]);
+
+        $author = User::factory()->create([
+            'role' => UserRole::User,
+        ]);
+
+        $category = ForumCategory::query()->create([
+            'name' => 'General',
+            'slug' => 'general',
+            'description' => 'General discussion',
+            'accent_color' => '#666666',
+            'sort_order' => 1,
+        ]);
+
+        $thread = ForumThread::query()->create([
+            'forum_category_id' => $category->id,
+            'user_id' => $owner->id,
+            'title' => 'Notification opt out test',
+            'slug' => 'notification-opt-out-test',
+            'body' => 'The owner should not get an email when notifications are off.',
+            'last_posted_at' => now(),
+        ]);
+
+        $this->actingAs($author)->post(route('forum.replies.store', [$category, $thread]), [
+            'body' => 'Reply that would normally notify the owner.',
+        ])->assertRedirect(route('forum.threads.show', [$category, $thread]));
+
+        Notification::assertNotSentTo($owner, ForumReplyPosted::class);
+    }
+
     public function test_authenticated_user_can_reply_to_an_existing_reply(): void
     {
         $user = User::factory()->create([

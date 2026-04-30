@@ -20,6 +20,7 @@ class ProfileInformationTest extends TestCase
 
         $this->assertEquals($user->name, $component->state['name']);
         $this->assertEquals($user->email, $component->state['email']);
+        $this->assertTrue($component->state['forum_notifications_enabled']);
     }
 
     public function test_profile_information_can_be_updated(): void
@@ -52,5 +53,21 @@ class ProfileInformationTest extends TestCase
             ->assertHasErrors(['name']);
 
         $this->assertEquals('Taylor', $user->fresh()->name);
+    }
+
+    public function test_forum_notifications_can_be_disabled_from_profile_settings(): void
+    {
+        $this->actingAs($user = User::factory()->create());
+
+        Livewire::test(UpdateProfileInformationForm::class)
+            ->set('state', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'forum_notifications_enabled' => false,
+            ])
+            ->call('updateProfileInformation')
+            ->assertHasNoErrors();
+
+        $this->assertFalse($user->fresh()->forum_notifications_enabled);
     }
 }
