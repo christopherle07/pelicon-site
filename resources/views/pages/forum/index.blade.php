@@ -5,7 +5,10 @@
             <p class="section-kicker">Forum</p>
             <h1 class="title-section mt-3 text-4xl sm:text-5xl">Community Forum</h1>
             <p class="copy-muted mt-4 max-w-2xl text-base leading-8">
-               Welcome to our forum page. Here you can ask for help, share your suggestions, and view active discussion threads that others have created. To interact with other users you must <a href="{{ route('register') }}" class="font-semibold text-accent hover:underline">create an account</a>.
+                Welcome to our forum page. Here you can ask for help, share your suggestions, and view active discussion threads that others have created. 
+            @guest    
+                To interact with other users you must <a href="{{ route('register') }}" class="font-semibold text-accent hover:underline">create an account</a>.
+            @endguest
             </p>
         </section>
 

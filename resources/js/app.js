@@ -184,7 +184,7 @@ const initializeScrollReveal = () => {
             observer.unobserve(entry.target);
         });
     }, {
-        rootMargin: '20% 0px 20% 0px',
+        rootMargin: '0px 0px 0px 0px',
         threshold: 0,
     });
 

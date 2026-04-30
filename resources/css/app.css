@@ -875,14 +875,14 @@ a {
 
 [data-scroll-reveal] {
     opacity: 0;
-    transform: translateY(3.5rem);
-    transition: opacity 650ms ease-out, transform 950ms cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translateY(5rem);
+    transition: transform 800ms cubic-bezier(0.22, 1, 0.36, 1), opacity 600ms ease-out 200ms;
     transition-delay: var(--reveal-delay, 0ms);
     will-change: opacity, transform;
 }
 
 [data-scroll-reveal][data-scroll-reveal-from="above"] {
-    transform: translateY(-3.5rem);
+    transform: translateY(-5rem);
 }
 
 [data-scroll-reveal].is-visible {
