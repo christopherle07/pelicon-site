@@ -266,6 +266,49 @@ class ForumPostingTest extends TestCase
         ]);
     }
 
+    public function test_nested_forum_replies_are_visible_in_thread_markup(): void
+    {
+        $user = User::factory()->create([
+            'role' => UserRole::User,
+        ]);
+
+        $category = ForumCategory::query()->create([
+            'name' => 'General',
+            'slug' => 'general-nested-replies',
+            'description' => 'General discussion',
+            'accent_color' => '#666666',
+            'sort_order' => 1,
+        ]);
+
+        $thread = ForumThread::query()->create([
+            'forum_category_id' => $category->id,
+            'user_id' => $user->id,
+            'title' => 'Nested reply visibility',
+            'slug' => 'nested-reply-visibility',
+            'body' => 'Nested replies should render below the parent reply.',
+            'last_posted_at' => now(),
+        ]);
+
+        $parentReply = ForumReply::query()->create([
+            'forum_thread_id' => $thread->id,
+            'user_id' => $user->id,
+            'body' => 'Parent reply body.',
+        ]);
+
+        ForumReply::query()->create([
+            'forum_thread_id' => $thread->id,
+            'user_id' => $user->id,
+            'parent_id' => $parentReply->id,
+            'body' => 'Nested child reply body.',
+        ]);
+
+        $this->get(route('forum.threads.show', [$category, $thread]))
+            ->assertOk()
+            ->assertSee('Parent reply body.')
+            ->assertSee('Nested child reply body.')
+            ->assertDontSee('x-show="!collapsed" x-cloak', false);
+    }
+
     public function test_authenticated_user_can_toggle_thread_reactions(): void
     {
         $user = User::factory()->create([

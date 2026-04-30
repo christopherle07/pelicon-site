@@ -150,7 +150,7 @@
     </article>
 
     @if ($hasChildren)
-        <div x-show="!collapsed" x-cloak class="forum-reply__children">
+        <div x-show="!collapsed" class="forum-reply__children">
             @foreach ($reply->children as $childReply)
                 @include('pages.forum.partials.reply', [
                     'reply' => $childReply,
