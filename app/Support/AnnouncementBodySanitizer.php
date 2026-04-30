@@ -15,6 +15,7 @@ class AnnouncementBodySanitizer
     private array $allowedAttributes = [
         'a' => ['href', 'target', 'rel'],
         'div' => ['style'],
+        'figure' => ['class', 'style'],
         'p' => ['style'],
         'span' => ['style'],
         'h2' => ['style'],
@@ -24,7 +25,8 @@ class AnnouncementBodySanitizer
         'ul' => ['style'],
         'ol' => ['style'],
         'li' => ['style'],
-        'img' => ['src', 'alt', 'title'],
+        'img' => ['src', 'alt', 'title', 'style', 'loading'],
+        'iframe' => ['src', 'height', 'frameborder', 'allowfullscreen', 'allow'],
     ];
 
     /**
@@ -34,15 +36,20 @@ class AnnouncementBodySanitizer
         'a',
         'blockquote',
         'br',
+        'code',
         'div',
         'em',
+        'figure',
+        'figcaption',
         'h2',
         'h3',
         'h4',
+        'iframe',
         'img',
         'li',
         'ol',
         'p',
+        'pre',
         's',
         'span',
         'strong',
@@ -58,6 +65,7 @@ class AnnouncementBodySanitizer
         'font-size',
         'font-style',
         'font-weight',
+        'max-width',
         'text-align',
         'text-decoration',
     ];

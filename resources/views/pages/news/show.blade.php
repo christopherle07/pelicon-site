@@ -32,25 +32,7 @@
                 <x-staff-badge :user="$announcement->author" />
             </div>
 
-            @if ($announcement->embedFrameUrl())
-                <div class="mt-8 overflow-hidden" style="background: var(--bg-elevated);">
-                    <iframe
-                        src="{{ $announcement->embedFrameUrl() }}"
-                        title="Announcement embed"
-                        class="aspect-video w-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowfullscreen
-                    ></iframe>
-                </div>
-            @elseif ($announcement->embed_url)
-                <div class="mt-8">
-                    <a href="{{ $announcement->embed_url }}" target="_blank" rel="noopener noreferrer" class="button-secondary inline-flex px-5 py-3 text-sm font-semibold transition">
-                        Open external media
-                    </a>
-                </div>
-            @endif
-
-            <div class="rich-copy copy-base mt-8 text-base leading-8">
+<div class="rich-copy copy-base mt-8 text-base leading-8">
                 {!! $announcement->body ?: nl2br(e($announcement->excerpt ?? '')) !!}
             </div>
 

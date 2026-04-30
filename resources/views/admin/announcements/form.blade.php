@@ -89,6 +89,9 @@
                                             <button type="button" class="editor-tool" data-tt="blockquote" title="Quote">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
                                             </button>
+                                            <button type="button" class="editor-tool" data-tt="codeBlock" title="Code block">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                                            </button>
                                         </div>
 
                                         {{-- Link (icon replaced by JS based on cursor state) --}}
@@ -152,20 +155,7 @@
                                 />
                             </div>
 
-                            <div>
-                                <x-label for="announcement_embed_url" value="Embed URL" />
-                                <x-input
-                                    id="announcement_embed_url"
-                                    name="embed_url"
-                                    type="url"
-                                    class="mt-2 block w-full"
-                                    :value="old('embed_url', $announcement->embed_url)"
-                                    placeholder="YouTube or Vimeo URL"
-                                />
-                                <p class="copy-faint mt-2 text-xs">YouTube and Vimeo links will render as embeds on the article page.</p>
-                            </div>
-
-                            <div class="surface-panel-alt p-5">
+<div class="surface-panel-alt p-5">
                                 <p class="section-kicker">Publishing</p>
                                 <p class="copy-muted mt-3 text-sm leading-7">
                                     Save a draft while you are still writing, or publish immediately when it is ready.

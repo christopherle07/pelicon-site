@@ -97,7 +97,6 @@ class AnnouncementController extends Controller
             'excerpt' => ['nullable', 'string', 'max:280'],
             'body' => ['nullable', 'string', 'max:50000'],
             'cover_image_url' => ['nullable', 'url', 'max:2048'],
-            'embed_url' => ['nullable', 'url', 'max:2048'],
             'status' => ['required', 'in:draft,published'],
         ]);
 
@@ -119,7 +118,7 @@ class AnnouncementController extends Controller
             'excerpt' => $excerpt !== '' ? $excerpt : Str::limit($plainBody, 220),
             'body' => $sanitizedBody,
             'cover_image_url' => $validated['cover_image_url'] ?: null,
-            'embed_url' => $validated['embed_url'] ?: null,
+            'embed_url' => null,
             'status' => $validated['status'],
             'published_at' => $validated['status'] === 'published'
                 ? ($announcement?->published_at ?? now())

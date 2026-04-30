@@ -1,6 +1,6 @@
 import './bootstrap';
 import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
-import { Editor, Extension, InputRule } from '@tiptap/core';
+import { Editor, Extension, InputRule, Node } from '@tiptap/core';
 import { StarterKit } from '@tiptap/starter-kit';
 import { TextAlign } from '@tiptap/extension-text-align';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -327,6 +327,7 @@ const syncEditorToolbar = (editor, root) => {
         ['bulletList', () => editor.isActive('bulletList')],
         ['orderedList', () => editor.isActive('orderedList')],
         ['blockquote', () => editor.isActive('blockquote')],
+        ['codeBlock', () => editor.isActive('codeBlock')],
     ].forEach(([key, check]) => {
         const btn = toolbar.querySelector(`[data-tt="${key}"]`);
         if (btn) {
@@ -373,6 +374,259 @@ const MarkdownLinkRule = Extension.create({
     },
 });
 
+const detectEmbed = (rawUrl) => {
+    const url = rawUrl.trim();
+    let parsed;
+    try { parsed = new URL(url); } catch { return null; }
+
+    const host = parsed.hostname.replace(/^www\./, '').toLowerCase();
+    const path = parsed.pathname;
+    const q = parsed.searchParams;
+
+    if (host === 'youtube.com' || host === 'youtu.be') {
+        let id = host === 'youtu.be' ? path.slice(1).split('?')[0]
+            : q.has('v') ? q.get('v')
+            : path.startsWith('/shorts/') ? path.split('/')[2]
+            : path.startsWith('/embed/') ? path.split('/')[2]
+            : '';
+        if (id) return { type: 'video', embedUrl: `https://www.youtube.com/embed/${id}`, url };
+    }
+
+    if (host === 'vimeo.com') {
+        const id = path.split('/').filter(Boolean)[0];
+        if (id && /^\d+$/.test(id)) return { type: 'video', embedUrl: `https://player.vimeo.com/video/${id}`, url };
+    }
+
+    if (host === 'tiktok.com' || host === 'vm.tiktok.com') {
+        const m = path.match(/\/video\/(\d+)/);
+        if (m) return { type: 'video', embedUrl: `https://www.tiktok.com/embed/v2/${m[1]}`, url };
+    }
+
+    if (host === 'instagram.com') {
+        const m = path.match(/\/(reel|p)\/([^/]+)/);
+        if (m) return { type: 'video', embedUrl: `https://www.instagram.com/${m[1]}/${m[2]}/embed/`, url };
+    }
+
+    if (host === 'imgur.com') {
+        const seg = path.split('/').filter(Boolean);
+        if (seg.length) {
+            const id = seg[seg.length - 1].split('.')[0];
+            return { type: 'image', embedUrl: `https://i.imgur.com/${id}.jpg`, url };
+        }
+    }
+
+    if (host === 'i.imgur.com') return { type: 'image', embedUrl: url, url };
+
+    if (/\.(jpe?g|png|gif|webp|avif|svg)(\?.*)?$/i.test(path)) {
+        return { type: 'image', embedUrl: url, url };
+    }
+
+    return null;
+};
+
+const EmbedNode = Node.create({
+    name: 'embed',
+    group: 'block',
+    atom: true,
+    selectable: true,
+    draggable: true,
+
+    addAttributes() {
+        return {
+            url:       { default: null },
+            embedUrl:  { default: null },
+            type:      { default: 'video' },
+            width:     { default: '100%' },
+            height:    { default: '400' },
+            showEmbed: { default: true },
+        };
+    },
+
+    parseHTML() {
+        return [
+            {
+                tag: 'figure.embed-block--video',
+                getAttrs(dom) {
+                    if (!(dom instanceof HTMLElement)) return false;
+                    const iframe = dom.querySelector('iframe');
+                    const link = dom.querySelector('figcaption a');
+                    return {
+                        url: link?.getAttribute('href') ?? null,
+                        embedUrl: iframe?.getAttribute('src') ?? null,
+                        type: 'video',
+                        width: iframe?.style.maxWidth || '100%',
+                        height: iframe?.getAttribute('height') || '400',
+                        showEmbed: true,
+                    };
+                },
+            },
+            {
+                tag: 'figure.embed-block--image',
+                getAttrs(dom) {
+                    if (!(dom instanceof HTMLElement)) return false;
+                    const img = dom.querySelector('img');
+                    const link = dom.querySelector('figcaption a');
+                    return {
+                        url: link?.getAttribute('href') ?? null,
+                        embedUrl: img?.getAttribute('src') ?? null,
+                        type: 'image',
+                        width: img?.style.maxWidth || '100%',
+                        height: null,
+                        showEmbed: true,
+                    };
+                },
+            },
+            {
+                tag: 'figure.embed-block--link-only',
+                getAttrs(dom) {
+                    if (!(dom instanceof HTMLElement)) return false;
+                    const link = dom.querySelector('a');
+                    return {
+                        url: link?.getAttribute('href') ?? null,
+                        embedUrl: link?.getAttribute('href') ?? null,
+                        type: 'video',
+                        width: '100%',
+                        height: '400',
+                        showEmbed: false,
+                    };
+                },
+            },
+        ];
+    },
+
+    renderHTML({ node }) {
+        const { url, embedUrl, type, width, height, showEmbed } = node.attrs;
+
+        if (!showEmbed) {
+            return ['figure', { class: 'embed-block embed-block--link-only' },
+                ['a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, url],
+            ];
+        }
+
+        if (type === 'image') {
+            return ['figure', { class: 'embed-block embed-block--image' },
+                ['img', { src: embedUrl, style: `max-width:${width}`, loading: 'lazy' }],
+                ['figcaption', ['a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, url]],
+            ];
+        }
+
+        return ['figure', { class: 'embed-block embed-block--video' },
+            ['iframe', {
+                src: embedUrl,
+                height: height || '400',
+                frameborder: '0',
+                allowfullscreen: 'true',
+                allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+                style: `width:100%;max-width:${width};display:block;`,
+            }],
+            ['figcaption', ['a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, url]],
+        ];
+    },
+
+    addNodeView() {
+        return ({ node: initialNode, updateAttributes }) => {
+            let node = initialNode;
+            const dom = document.createElement('div');
+            dom.className = 'embed-node-view';
+            dom.contentEditable = 'false';
+
+            const render = () => {
+                const { url, embedUrl, type, width, height, showEmbed } = node.attrs;
+                dom.innerHTML = '';
+
+                const bar = document.createElement('div');
+                bar.className = 'embed-node-bar';
+
+                const toggleBtn = document.createElement('button');
+                toggleBtn.type = 'button';
+                toggleBtn.className = 'embed-node-toggle' + (showEmbed ? '' : ' is-link-only');
+                toggleBtn.textContent = showEmbed ? 'Embed on' : 'Link only';
+                toggleBtn.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    updateAttributes({ showEmbed: !node.attrs.showEmbed });
+                });
+                bar.appendChild(toggleBtn);
+
+                if (showEmbed) {
+                    const wLabel = document.createElement('label');
+                    wLabel.className = 'embed-node-label';
+                    wLabel.textContent = 'W:';
+                    const wInput = document.createElement('input');
+                    wInput.type = 'text';
+                    wInput.value = width;
+                    wInput.className = 'embed-node-input';
+                    wInput.addEventListener('mousedown', (e) => e.stopPropagation());
+                    wInput.addEventListener('change', () => updateAttributes({ width: wInput.value }));
+                    wLabel.appendChild(wInput);
+                    bar.appendChild(wLabel);
+
+                    if (type === 'video') {
+                        const hLabel = document.createElement('label');
+                        hLabel.className = 'embed-node-label';
+                        hLabel.textContent = 'H:';
+                        const hInput = document.createElement('input');
+                        hInput.type = 'text';
+                        hInput.value = height || '400';
+                        hInput.className = 'embed-node-input';
+                        hInput.addEventListener('mousedown', (e) => e.stopPropagation());
+                        hInput.addEventListener('change', () => updateAttributes({ height: hInput.value }));
+                        hLabel.appendChild(hInput);
+                        bar.appendChild(hLabel);
+                    }
+                }
+
+                const urlRef = document.createElement('a');
+                urlRef.href = url;
+                urlRef.textContent = url;
+                urlRef.target = '_blank';
+                urlRef.rel = 'noopener noreferrer';
+                urlRef.className = 'embed-node-url';
+                urlRef.addEventListener('mousedown', (e) => e.stopPropagation());
+                bar.appendChild(urlRef);
+
+                dom.appendChild(bar);
+
+                if (showEmbed) {
+                    if (type === 'image') {
+                        const img = document.createElement('img');
+                        img.src = embedUrl;
+                        img.style.maxWidth = width;
+                        img.style.display = 'block';
+                        img.className = 'embed-node-preview';
+                        dom.appendChild(img);
+                    } else {
+                        const wrap = document.createElement('div');
+                        wrap.style.maxWidth = width;
+                        const iframe = document.createElement('iframe');
+                        iframe.src = embedUrl;
+                        iframe.width = '100%';
+                        iframe.height = height || '400';
+                        iframe.frameBorder = '0';
+                        iframe.setAttribute('allowfullscreen', '');
+                        iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+                        iframe.style.display = 'block';
+                        iframe.className = 'embed-node-iframe';
+                        wrap.appendChild(iframe);
+                        dom.appendChild(wrap);
+                    }
+                }
+            };
+
+            render();
+
+            return {
+                dom,
+                update(updatedNode) {
+                    if (updatedNode.type !== node.type) return false;
+                    node = updatedNode;
+                    render();
+                    return true;
+                },
+            };
+        };
+    },
+});
+
 const initTiptapEditors = () => {
     document.querySelectorAll('[data-rich-editor]').forEach((root) => {
         if (!(root instanceof HTMLElement) || root.dataset.richEditorInitialized === 'true') {
@@ -400,6 +654,7 @@ const initTiptapEditors = () => {
                     },
                 }),
                 MarkdownLinkRule,
+                EmbedNode,
                 TextAlign.configure({ types: ['heading', 'paragraph'] }),
                 TextStyle,
                 Color,
@@ -407,6 +662,32 @@ const initTiptapEditors = () => {
             content: input.value || '',
             editorProps: {
                 attributes: { class: 'rich-copy', spellcheck: 'true' },
+                handlePaste(view, event) {
+                    const text = event.clipboardData?.getData('text/plain')?.trim() ?? '';
+                    if (!text || !/^https?:\/\/\S+$/.test(text)) return false;
+                    const embed = detectEmbed(text);
+                    if (!embed) return false;
+                    event.preventDefault();
+                    const node = view.state.schema.nodes.embed?.create(embed);
+                    if (!node) return false;
+                    view.dispatch(view.state.tr.replaceSelectionWith(node));
+                    return true;
+                },
+                handleKeyDown(view, event) {
+                    if (event.key === 'Tab') {
+                        const { $from } = view.state.selection;
+                        let inList = false;
+                        for (let d = $from.depth; d > 0; d--) {
+                            if ($from.node(d).type.name === 'listItem') { inList = true; break; }
+                        }
+                        if (!inList) {
+                            event.preventDefault();
+                            view.dispatch(view.state.tr.insertText('    '));
+                            return true;
+                        }
+                    }
+                    return false;
+                },
             },
             onUpdate: ({ editor }) => {
                 input.value = editor.getHTML();
@@ -448,6 +729,7 @@ const initTiptapEditors = () => {
                 bulletList: () => editor.chain().focus().toggleBulletList().run(),
                 orderedList: () => editor.chain().focus().toggleOrderedList().run(),
                 blockquote: () => editor.chain().focus().toggleBlockquote().run(),
+                codeBlock: () => editor.chain().focus().toggleCodeBlock().run(),
                 clear: () => editor.chain().focus().clearNodes().unsetAllMarks().run(),
             };
 
