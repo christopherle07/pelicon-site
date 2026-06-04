@@ -47,7 +47,6 @@
                     @forelse ($searchResults as $thread)
                         <a href="{{ route('forum.threads.show', [$thread->category, $thread]) }}" class="forum-thread-card forum-card-link">
                             <div class="forum-thread-card__meta">
-                                <span class="forum-thread-card__category-dot" style="background-color: {{ $thread->category->accent_color }}"></span>
                                 <span class="section-kicker">{{ $thread->category->name }}</span>
                                 <span class="copy-faint">&middot;</span>
                                 <span class="copy-faint text-sm font-semibold text-[color:var(--text-strong)]">{{ $thread->author->name }}</span>
@@ -87,17 +86,12 @@
                 <div class="forum-category-list">
                     @foreach ($categories as $category)
                         <a href="{{ route('forum.show', $category) }}" class="forum-category-card forum-card-link">
-                            <div class="flex items-center gap-3">
-                                <span class="forum-thread-card__category-dot" style="background-color: {{ $category->accent_color }}"></span>
-                                <p class="copy-faint text-sm font-bold uppercase tracking-[0.18em]">{{ $category->name }}</p>
-                            </div>
-
-                            <p class="copy-base mt-4 text-base leading-8">{{ $category->description }}</p>
-
-                            <div class="mt-6 flex items-center justify-between">
+                            <div class="forum-category-card__head">
+                                <p class="forum-category-card__name">{{ $category->name }}</p>
                                 <span class="copy-faint text-sm">{{ $category->threads_count }} threads</span>
-                                <span class="text-sm font-semibold text-[color:var(--accent-strong)]">Open</span>
                             </div>
+
+                            <p class="copy-base mt-3 text-base leading-8">{{ $category->description }}</p>
                         </a>
                     @endforeach
                 </div>
@@ -115,7 +109,6 @@
                     @forelse ($recentThreads as $thread)
                         <a href="{{ route('forum.threads.show', [$thread->category, $thread]) }}" class="forum-thread-card forum-card-link">
                             <div class="forum-thread-card__meta">
-                                <span class="forum-thread-card__category-dot" style="background-color: {{ $thread->category->accent_color }}"></span>
                                 <span class="section-kicker">{{ $thread->category->name }}</span>
                                 <span class="copy-faint">&middot;</span>
                                 <span class="copy-faint text-sm font-semibold text-[color:var(--text-strong)]">{{ $thread->author->name }}</span>

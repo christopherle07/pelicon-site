@@ -16,10 +16,7 @@
         </div>
 
         <section class="forum-category-hero">
-            <div class="flex items-center gap-3">
-                <span class="forum-thread-card__category-dot" style="background-color: {{ $category->accent_color }}"></span>
-                <p class="section-kicker">{{ $category->name }}</p>
-            </div>
+            <p class="section-kicker">{{ $category->name }}</p>
             <h1 class="title-section mt-4 text-4xl sm:text-5xl">{{ $category->name }}</h1>
             <p class="copy-muted mt-4 max-w-2xl text-base leading-8">{{ $category->description }}</p>
             <div class="copy-faint mt-6 flex flex-wrap items-center gap-4 text-sm">
