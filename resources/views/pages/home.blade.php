@@ -34,8 +34,8 @@
                             </div>
                         </div>
 
-                        <a href="{{ route('news.index') }}" class="home-cta-secondary">
-                            Updates
+                        <a href="{{ route('contact') }}" class="home-cta-secondary">
+                            Contact
                         </a>
                     </div>
                 </div>
@@ -139,38 +139,21 @@
 
         <section class="home-bottom-grid">
             <article class="home-announcement">
-                <p class="section-kicker">Latest News</p>
+                <p class="section-kicker">Local-first</p>
 
-                @if ($latestAnnouncement)
-                    <div class="home-announcement__meta">
-                        <span>{{ $latestAnnouncement->published_at?->format('M j, Y') }}</span>
-                        <span>&middot;</span>
-                        <span>{{ $latestAnnouncement->comments_count }} comments</span>
-                        <span>&middot;</span>
-                        <span>{{ $latestAnnouncement->reactions_count }} reactions</span>
-                    </div>
+                <h2 class="title-section mt-4 max-w-3xl text-3xl">Your reference library stays on your device.</h2>
+                <p class="copy-base mt-4 max-w-3xl text-base leading-8">
+                    Pelicon is built around local folders and visual boards, without website accounts, cloud profiles, or a public community layer.
+                </p>
 
-                    <h2 class="title-section mt-4 max-w-3xl text-3xl">{{ $latestAnnouncement->title }}</h2>
-                    <p class="copy-base mt-4 max-w-3xl text-base leading-8">
-                        {{ $latestAnnouncement->excerpt }}
-                    </p>
-
-                    <div class="mt-8 flex flex-wrap gap-3">
-                        <a href="{{ route('news.show', $latestAnnouncement) }}" class="home-news-card__button">
-                            Open post
-                        </a>
-                        <a href="{{ route('news.index') }}" class="home-news-card__button home-news-card__button--ghost">
-                            All news
-                        </a>
-                    </div>
-                @else
-                    <h2 class="title-section mt-4 max-w-3xl text-3xl">No update posted yet.</h2>
-                    <div class="mt-8">
-                        <a href="{{ route('news.index') }}" class="home-news-card__button">
-                            Open news
-                        </a>
-                    </div>
-                @endif
+                <div class="mt-8 flex flex-wrap gap-3">
+                    <a href="{{ route('download.index') }}" class="home-news-card__button">
+                        Download Pelicon
+                    </a>
+                    <a href="{{ route('faq') }}" class="home-news-card__button home-news-card__button--ghost">
+                        Read FAQ
+                    </a>
+                </div>
             </article>
 
             <aside class="home-links-panel">
@@ -182,13 +165,13 @@
                         <span>Open</span>
                     </a>
 
-                    <a href="{{ route('news.index') }}" class="home-links-item">
-                        <span>News</span>
+                    <a href="{{ route('faq') }}" class="home-links-item">
+                        <span>FAQ</span>
                         <span>Open</span>
                     </a>
 
-                    <a href="{{ route('forum.index') }}" class="home-links-item">
-                        <span>Forum</span>
+                    <a href="{{ route('contact') }}" class="home-links-item">
+                        <span>Contact</span>
                         <span>Open</span>
                     </a>
 

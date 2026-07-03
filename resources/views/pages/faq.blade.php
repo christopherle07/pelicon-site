@@ -10,7 +10,7 @@
                 ['q' => 'Is it free?', 'a' => 'Yes. The app is free to use. Donations are optional and help support development.'],
                 ['q' => 'Where are my files stored?', 'a' => "Everything is stored locally on your device. We don't store or access your boards, images, or files."],
                 ['q' => 'Is there cloud-sync?', 'a' => 'No. This is not a cloud-based service. We do not provide a way to sync your workspaces or assets across devices. Currently.'],
-                ['q' => 'Do I need an account?', 'a' => 'No. The app works without an account. Accounts are only for the website and forums.'],
+                ['q' => 'Do I need an account?', 'a' => 'No. Pelicon works without an account, and this website no longer has account features.'],
                 ['q' => 'What\'s the app built with?', 'a' => 'The app is built with Tauri, using Rust under the hood with a React and TypeScript frontend styled with Tailwind. The website is built with PHP and Laravel Blade.'],
             ] as $item)
                 <div x-data="{ open: false }">

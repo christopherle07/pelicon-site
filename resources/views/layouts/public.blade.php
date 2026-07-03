@@ -11,7 +11,6 @@
         <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800" rel="stylesheet" />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        @livewireStyles
     </head>
     <body class="theme-shell min-h-screen antialiased">
         <div class="flex min-h-screen w-full flex-col">
@@ -45,8 +44,8 @@
                                 <p class="section-kicker">Product</p>
                                 <nav class="mt-4 flex flex-col gap-3">
                                     <a href="{{ route('download.index') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Download</a>
-                                    <a href="{{ route('news.index') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">News</a>
-                                    <a href="{{ route('forum.index') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Forum</a>
+                                    <a href="{{ route('faq') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">FAQ</a>
+                                    <a href="{{ route('contact') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Contact</a>
                                 </nav>
                             </div>
 
@@ -64,8 +63,6 @@
                                 <nav class="mt-4 flex flex-col gap-3">
                                     <a href="{{ route('terms') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Terms of Service</a>
                                     <a href="{{ route('privacy') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Privacy Policy</a>
-                                    <a href="{{ route('developer.policies') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Developer Policy</a>
-                                    <a href="{{ route('licensing') }}" class="font-semibold text-[color:var(--text-strong)] transition hover:opacity-70">Licensing Agreement</a>
                                 </nav>
                             </div>
                         </div>
@@ -74,6 +71,5 @@
             </footer>
         </div>
 
-        @livewireScriptConfig
     </body>
 </html>

@@ -3,14 +3,13 @@
         <p class="section-kicker">Contact</p>
         <h1 class="title-hero mt-3 text-4xl sm:text-5xl">Contact the Pelicon team</h1>
         <div class="copy-base mt-6 space-y-4 text-base leading-8">
-            <p>The best place to reach the team right now is the forum. It keeps questions, bug reports, and suggestions in one place so nothing gets lost.</p>
-            <p>If you want support or feedback, open a thread in the forum and include as much detail as you can.</p>
-            <p>For important enquiries please contact us via email: <a href="mailto:hi@pelicon.app" class="underline underline-offset-2">hi@pelicon.app</a></p>
+            <p>For support, feedback, bug reports, or important enquiries, email us at <a href="mailto:hi@pelicon.app" class="underline underline-offset-2">hi@pelicon.app</a>.</p>
+            <p>You can also join the Discord if you want a faster, more casual place to ask questions.</p>
         </div>
 
         <div class="mt-8">
-            <a href="{{ route('forum.index') }}" class="button-secondary inline-flex px-6 py-3 text-sm font-semibold transition">
-                Open the Forum
+            <a href="https://discord.gg/WFFCqzAb" class="button-secondary inline-flex px-6 py-3 text-sm font-semibold transition" target="_blank" rel="noreferrer">
+                Join Discord
             </a>
         </div>
     </section>

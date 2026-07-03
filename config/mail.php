@@ -49,18 +49,6 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
-        'forum_notifications' => [
-            'transport' => 'smtp',
-            'scheme' => env('FORUM_NOTIFICATION_MAIL_SCHEME', 'smtp'),
-            'url' => env('FORUM_NOTIFICATION_MAIL_URL'),
-            'host' => env('FORUM_NOTIFICATION_MAIL_HOST', env('MAIL_HOST', '127.0.0.1')),
-            'port' => env('FORUM_NOTIFICATION_MAIL_PORT', env('MAIL_PORT', 2525)),
-            'username' => env('FORUM_NOTIFICATION_MAIL_USERNAME'),
-            'password' => env('FORUM_NOTIFICATION_MAIL_PASSWORD'),
-            'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
-        ],
-
         'ses' => [
             'transport' => 'ses',
         ],
@@ -125,13 +113,6 @@ return [
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
-    ],
-
-    'forum_notifications' => [
-        'from' => [
-            'address' => env('FORUM_NOTIFICATION_MAIL_FROM_ADDRESS', env('FORUM_NOTIFICATION_MAIL_USERNAME', env('MAIL_FROM_ADDRESS', 'hello@example.com'))),
-            'name' => env('FORUM_NOTIFICATION_MAIL_FROM_NAME', env('APP_NAME', 'Laravel').' Forum'),
-        ],
     ],
 
 ];

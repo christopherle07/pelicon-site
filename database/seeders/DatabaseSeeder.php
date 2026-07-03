@@ -14,14 +14,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            ForumCategorySeeder::class,
-        ]);
-
-        if (app()->environment('local')) {
-            $this->call([
-                LocalDemoContentSeeder::class,
-            ]);
-        }
+        //
     }
 }
