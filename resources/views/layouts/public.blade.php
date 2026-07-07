@@ -22,6 +22,31 @@
                     {{ $slot }}
                 </div>
             </main>
+
+            <footer class="site-footer">
+                <div class="site-footer__inner">
+                    <div>
+                        <a href="{{ route('home') }}" class="site-footer__brand">
+                            Pelicon
+                        </a>
+                        <p class="site-footer__copy">
+                            App suite for visual work.
+                        </p>
+                    </div>
+
+                    <nav class="site-footer__links" aria-label="Footer navigation">
+                        <a href="{{ route('download.index') }}">Products</a>
+                        <a href="https://ko-fi.com/peliconapp" target="_blank" rel="noreferrer">Ko-Fi</a>
+                        <a href="{{ route('contact') }}">Contact</a>
+                        <a href="{{ route('privacy') }}">Privacy</a>
+                        <a href="{{ route('terms') }}">Terms</a>
+                    </nav>
+                </div>
+
+                <div class="site-footer__meta">
+                    &copy; Pelicon App 2026
+                </div>
+            </footer>
         </div>
 
         <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
