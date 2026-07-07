@@ -2,7 +2,28 @@
     <div class="download-page">
         <section class="download-stack">
             <article
-                x-data="{ selectedPlatform: null, hasSelectedPlatform: false }"
+                x-data="{
+                    selectedPlatform: null,
+                    init() {
+                        this.selectedPlatform = this.detectPlatform();
+                    },
+                    detectPlatform() {
+                        const platform = (navigator.userAgentData && navigator.userAgentData.platform)
+                            || navigator.platform
+                            || navigator.userAgent
+                            || '';
+
+                        if (/mac/i.test(platform)) {
+                            return 'macos';
+                        }
+
+                        if (/win/i.test(platform)) {
+                            return 'windows';
+                        }
+
+                        return null;
+                    },
+                }"
                 class="download-card-shell w-full"
             >
                 <h1 class="download-page-title">Pelicon Apps</h1>
@@ -21,7 +42,7 @@
                             type="button"
                             class="platform-picker__button"
                             :class="{ 'platform-picker__button--active': selectedPlatform === '{{ $key }}' }"
-                            @click="hasSelectedPlatform = selectedPlatform === null; selectedPlatform = '{{ $key }}'"
+                            @click="selectedPlatform = '{{ $key }}'"
                         >
                             <img
                                 src="{{ asset('assets/'.($key === 'macos' ? 'mac.svg' : 'windows.svg')) }}"
@@ -39,43 +60,46 @@
                         Choose an operating system.
                     </p>
 
-                    @foreach ($platforms as $key => $platform)
-                        <div
-                            x-cloak
-                            x-show="selectedPlatform === '{{ $key }}'"
-                            :class="{ 'app-download-list--pop': hasSelectedPlatform && selectedPlatform === '{{ $key }}' }"
-                            @animationend="hasSelectedPlatform = false"
-                            class="app-download-list"
-                        >
-                            <a
-                                href="{{ $platform['download_url'] }}"
-                                download="{{ $platform['filename'] }}"
-                                class="app-download-card"
-                            >
-                                <span>
-                                    <span class="app-download-card__name">Pelicon Boards</span>
-                                    <span class="app-download-card__meta">Blue Jay (Alpha)</span>
-                                </span>
-                                <span class="app-download-card__action">Download</span>
-                            </a>
+                    <div
+                        x-cloak
+                        x-show="selectedPlatform"
+                        class="app-download-list"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 -translate-y-4"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                    >
+                        @foreach ($platforms as $key => $platform)
+                            <div x-show="selectedPlatform === '{{ $key }}'" class="app-download-list__content" x-cloak>
+                                <a
+                                    href="{{ $platform['download_url'] }}"
+                                    download="{{ $platform['filename'] }}"
+                                    class="app-download-card"
+                                >
+                                    <span>
+                                        <span class="app-download-card__name">Pelicon Boards</span>
+                                        <span class="app-download-card__meta">Blue Jay (Alpha)</span>
+                                    </span>
+                                    <span class="app-download-card__action">Download</span>
+                                </a>
 
-                            <article class="app-download-card app-download-card--disabled" aria-disabled="true">
-                                <span>
-                                    <span class="app-download-card__name">Pelicon Cast</span>
-                                    <span class="app-download-card__meta">{{ $platform['name'] }}</span>
-                                </span>
-                                <span class="app-download-card__status">In development</span>
-                            </article>
+                                <article class="app-download-card app-download-card--disabled" aria-disabled="true">
+                                    <span>
+                                        <span class="app-download-card__name">Pelicon Cast</span>
+                                        <span class="app-download-card__meta">{{ $platform['name'] }}</span>
+                                    </span>
+                                    <span class="app-download-card__status">In development</span>
+                                </article>
 
-                            <article class="app-download-card app-download-card--disabled" aria-disabled="true">
-                                <span>
-                                    <span class="app-download-card__name">Pelicon Write</span>
-                                    <span class="app-download-card__meta">{{ $platform['name'] }}</span>
-                                </span>
-                                <span class="app-download-card__status">In development</span>
-                            </article>
-                        </div>
-                    @endforeach
+                                <article class="app-download-card app-download-card--disabled" aria-disabled="true">
+                                    <span>
+                                        <span class="app-download-card__name">Pelicon Write</span>
+                                        <span class="app-download-card__meta">{{ $platform['name'] }}</span>
+                                    </span>
+                                    <span class="app-download-card__status">In development</span>
+                                </article>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             </article>
 
