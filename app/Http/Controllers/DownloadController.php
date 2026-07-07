@@ -20,11 +20,6 @@ class DownloadController extends Controller
             'copy' => 'Placeholder build for Windows desktops and laptops.',
             'filename' => 'pelicon-windows-placeholder.txt',
         ],
-        'linux' => [
-            'name' => 'Linux',
-            'copy' => 'Placeholder build for Linux distros.',
-            'filename' => 'pelicon-linux-placeholder.txt',
-        ],
     ];
 
     /**

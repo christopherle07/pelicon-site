@@ -10,8 +10,9 @@ class DownloadPagesTest extends TestCase
     {
         $this->get(route('download.index'))
             ->assertOk()
-            ->assertSee('Download Pelicon')
+            ->assertSee('Pelicon Apps')
             ->assertSee('macOS')
-            ->assertSee('Tip');
+            ->assertSee('Windows')
+            ->assertDontSee('Linux');
     }
 }

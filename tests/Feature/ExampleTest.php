@@ -18,7 +18,8 @@ class ExampleTest extends TestCase
 
         $response
             ->assertStatus(200)
-            ->assertSeeText('Say Hi to Pelicon.')
-            ->assertSeeText('Your personal reference-image organizer made for artists');
+            ->assertSeeText('This is')
+            ->assertSeeText('Pelicon')
+            ->assertSeeText('Our Software');
     }
 }
