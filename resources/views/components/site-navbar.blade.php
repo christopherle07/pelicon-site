@@ -36,9 +36,9 @@
                             class="site-nav-button site-nav-button--download"
                             :style="scrolled
                                 ? 'background: var(--brand-green); color: #fff;'
-                                : '{{ $downloadActive ? 'background: #fff; color: var(--text-strong);' : 'background: #fff; color: var(--text-muted);' }}'"
+                                : '{{ $downloadActive ? 'background: #fff; color: var(--brand-green);' : 'background: #fff; color: var(--text-muted);' }}'"
                         >
-                            {{ __('Apps') }}
+                            {{ __('Products') }}
                         </a>
                     </div>
 
@@ -56,7 +56,7 @@
                 <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
                     <div class="space-y-1 pt-2 pb-3">
                         <x-responsive-nav-link href="{{ route('download.index') }}" :active="$downloadActive">
-                            {{ __('Apps') }}
+                            {{ __('Products') }}
                         </x-responsive-nav-link>
                     </div>
                 </div>

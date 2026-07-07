@@ -6,6 +6,6 @@ $classes = ($active ?? false)
             : 'site-nav-button focus:outline-none';
 @endphp
 
-<a {{ $attributes->merge(['class' => $classes, 'style' => ($active ?? false) ? 'color: var(--text-strong); background: var(--accent-soft);' : 'color: var(--text-muted);']) }}>
+<a {{ $attributes->merge(['class' => $classes.' font-unicase', 'style' => ($active ?? false) ? 'color: var(--text-strong); background: var(--accent-soft);' : 'color: var(--text-muted);']) }}>
     {{ $slot }}
 </a>

@@ -26,9 +26,9 @@
                 }"
                 class="download-card-shell w-full"
             >
-                <h1 class="download-page-title">Pelicon Apps</h1>
+                <h1 class="download-page-title" data-ui-reveal>Pelicon Apps</h1>
 
-                <div class="platform-picker" aria-label="Operating systems">
+                <div class="platform-picker" aria-label="Operating systems" data-ui-reveal style="--ui-reveal-delay: 90ms;">
                     <span
                         x-cloak
                         x-show="selectedPlatform"
@@ -55,7 +55,7 @@
                     @endforeach
                 </div>
 
-                <div class="app-selection-panel">
+                <div class="app-selection-panel" data-ui-reveal style="--ui-reveal-delay: 180ms;">
                     <p x-show="! selectedPlatform" class="app-selection-panel__empty">
                         Choose an operating system.
                     </p>
@@ -64,9 +64,7 @@
                         x-cloak
                         x-show="selectedPlatform"
                         class="app-download-list"
-                        x-transition:enter="transition ease-out duration-300"
-                        x-transition:enter-start="opacity-0 -translate-y-4"
-                        x-transition:enter-end="opacity-100 translate-y-0"
+                        :class="{ 'app-download-list--open': selectedPlatform }"
                     >
                         @foreach ($platforms as $key => $platform)
                             <div x-show="selectedPlatform === '{{ $key }}'" class="app-download-list__content" x-cloak>
@@ -107,6 +105,8 @@
                 x-data="{ supportOpen: false }"
                 @keydown.escape.window="supportOpen = false"
                 class="tip-jar-card"
+                data-ui-reveal
+                style="--ui-reveal-delay: 240ms;"
             >
                 <button
                     type="button"
