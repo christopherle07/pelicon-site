@@ -6,7 +6,7 @@
                     <span data-home-typewriter>
                         <span class="home-intro-title__prefix" data-type-part data-type-text="This is">This is</span>
                         <span class="home-intro-title__main">
-                            <span class="home-intro-title__accent" data-type-part data-type-text="Pelicon">Pelicon</span><span data-type-part data-type-text=".">.</span>
+                            <span class="home-intro-title__accent" data-type-part data-type-text="Pelicon">Pelicon</span><span class="home-intro-title__period" data-type-part data-type-text=".">.</span>
                         </span>
                         <span class="home-intro-cursor" aria-hidden="true"></span>
                     </span>
@@ -80,6 +80,55 @@
                     </template>
                 </div>
             </div>
+
+            <section class="home-about" aria-label="About Pelicon" data-ui-reveal style="--ui-reveal-delay: 120ms;">
+                <p class="home-about__kicker">About</p>
+                <h2 class="home-about__title">Tools for visual work.</h2>
+                <div class="home-about__body">
+                    <p>
+                        Pelicon is a small app suite for collecting references, shaping ideas, and keeping creative work organized.
+                    </p>
+                    <p>
+                        The first app, Pelicon Boards, is built around local-first image boards so your files stay on your device.
+                    </p>
+                    <p>
+                        More tools are in development, with the same focus on quiet interfaces and practical workflows.
+                    </p>
+                </div>
+            </section>
+
+            <section class="home-contributors" aria-label="Staff and contributors" data-ui-reveal style="--ui-reveal-delay: 180ms;">
+                @php
+                    $contributors = [
+                        ['name' => 'Chris', 'role' => 'Founder'],
+                        ['name' => 'Boards', 'role' => 'Desktop app'],
+                        ['name' => 'Cast', 'role' => 'In development'],
+                        ['name' => 'Write', 'role' => 'In development'],
+                        ['name' => 'Community', 'role' => 'Feedback'],
+                        ['name' => 'Supporters', 'role' => 'Ko-fi'],
+                    ];
+                @endphp
+
+                <div class="home-contributors__header">
+                    <h2 class="home-contributors__title">The Crew</h2>
+                </div>
+
+                <div class="home-contributors__strip" data-marquee aria-hidden="true">
+                    <div class="home-contributors__track">
+                        @foreach ([$contributors, $contributors] as $contributorSet)
+                            @foreach ($contributorSet as $person)
+                                <article class="home-contributor">
+                                    <span class="home-contributor__media"></span>
+                                    <span class="home-contributor__meta">
+                                        <span class="home-contributor__name">{{ $person['name'] }}</span>
+                                        <span class="home-contributor__role">{{ $person['role'] }}</span>
+                                    </span>
+                                </article>
+                            @endforeach
+                        @endforeach
+                    </div>
+                </div>
+            </section>
         </section>
     </div>
 </x-public-layout>

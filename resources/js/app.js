@@ -125,9 +125,43 @@ const initializeUiReveal = () => {
     revealElements.forEach((element) => observer.observe(element));
 };
 
+const initializeMarquees = () => {
+    const marquees = Array.from(document.querySelectorAll('[data-marquee]'))
+        .filter((element) => element instanceof HTMLElement && element.dataset.marqueeInitialized !== 'true');
+
+    if (marquees.length === 0 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+    }
+
+    marquees.forEach((element) => {
+        element.dataset.marqueeInitialized = 'true';
+    });
+
+    if (!('IntersectionObserver' in window)) {
+        marquees.forEach((element) => element.classList.add('is-running'));
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!(entry.target instanceof HTMLElement)) {
+                return;
+            }
+
+            entry.target.classList.toggle('is-running', entry.isIntersecting);
+        });
+    }, {
+        rootMargin: '12% 0px',
+        threshold: 0.08,
+    });
+
+    marquees.forEach((element) => observer.observe(element));
+};
+
 const initializeSite = () => {
     initializeHomeTypewriter();
     initializeUiReveal();
+    initializeMarquees();
 };
 
 if (document.readyState === 'loading') {

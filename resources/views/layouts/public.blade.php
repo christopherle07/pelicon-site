@@ -14,7 +14,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="theme-shell min-h-screen antialiased">
-        <div class="flex min-h-screen w-full flex-col">
+        <div class="relative z-[1] flex min-h-screen w-full flex-col">
             <x-site-navbar />
 
             <main class="flex-1 px-5 py-10 sm:px-8 sm:py-14 lg:px-10">

@@ -105,31 +105,35 @@
                 x-data="{ supportOpen: false }"
                 @keydown.escape.window="supportOpen = false"
                 class="tip-jar-card"
-                data-ui-reveal
-                style="--ui-reveal-delay: 240ms;"
             >
-                <button
-                    type="button"
-                    class="support-us-button"
-                    @click="supportOpen = true"
+                <div
+                    class="tip-jar-card__actions"
+                    data-ui-reveal
+                    style="--ui-reveal-delay: 240ms;"
                 >
-                    Support us
-                </button>
+                    <button
+                        type="button"
+                        class="support-us-button"
+                        @click="supportOpen = true"
+                    >
+                        Support us
+                    </button>
 
-                <a
-                    href="https://ko-fi.com/peliconapp"
-                    class="support-page-link"
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                    Our Ko-Fi Page
-                </a>
+                    <a
+                        href="https://ko-fi.com/peliconapp"
+                        class="support-page-link"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        Our Ko-Fi Page
+                    </a>
+                </div>
 
                 <div
                     x-cloak
-                    x-show="supportOpen"
-                    x-transition.opacity
                     class="support-modal"
+                    :class="{ 'support-modal--open': supportOpen }"
+                    :aria-hidden="(! supportOpen).toString()"
                     role="dialog"
                     aria-modal="true"
                     aria-label="Support Pelicon"
@@ -142,8 +146,6 @@
                     ></button>
 
                     <div
-                        x-show="supportOpen"
-                        x-transition
                         class="support-modal__panel"
                     >
                         <button
@@ -155,15 +157,13 @@
                             &times;
                         </button>
 
-                        <template x-if="supportOpen">
-                            <iframe
-                                id="kofiframe"
-                                class="ko-fi-embed"
-                                src="https://ko-fi.com/peliconapp/?hidefeed=true&widget=true&embed=true&preview=true"
-                                height="620"
-                                title="peliconapp"
-                            ></iframe>
-                        </template>
+                        <iframe
+                            id="kofiframe"
+                            class="ko-fi-embed"
+                            src="https://ko-fi.com/peliconapp/?hidefeed=true&widget=true&embed=true&preview=true"
+                            height="620"
+                            title="peliconapp"
+                        ></iframe>
                     </div>
                 </div>
             </aside>
